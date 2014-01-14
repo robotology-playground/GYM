@@ -13,6 +13,11 @@ public:
   double y;
   double yaw;
   
+  Pose2D():x(0), y(0), yaw(0){
+  }
+  
+  Pose2D(double x_, double y_, double yaw_):x(x_), y(y_), yaw(yaw_){
+  }
 };
 
 #endif
