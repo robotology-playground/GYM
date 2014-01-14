@@ -1,5 +1,5 @@
 /* 
- *  YARP Implementation of the ros message geometry_msgs/Point
+ *  YARP Implementation of the ros message geometry_msgs/Quaternion
  *
  *  email: v.varricchio@gmail.com 
  */
@@ -15,11 +15,15 @@ public:
   double x,y,z,w;
   
   yarp::os::ConstString getTypeName() const {
-    return "YARP_Point";
+    return "YARP_Quaternion";
   }
 
-  YARP_Quaternion(): x(0), y(0), z(0), w(0){
+  YARP_Quaternion(): x(0), y(0), z(0), w(1){
   };
+
+  YARP_Quaternion(const double& x_, const double& y_, const double& z_, const double& w_): x(x_), y(y_), z(z_), w(w_){
+  };
+ 
  
   bool read(yarp::os::ConnectionReader& connection) {
     x = connection.expectDouble();
@@ -38,6 +42,8 @@ public:
     
     return !connection.isError();
   }
+
+  
 };
 
 #endif

@@ -20,6 +20,9 @@ public:
 
   YARP_Point(): x(0), y(0), z(0){
   };
+
+  YARP_Point(const double& x_, const double& y_, const double& z_): x(x_), y(y_), z(z_){
+  };
  
   bool read(yarp::os::ConnectionReader& connection) {
     x = connection.expectDouble();

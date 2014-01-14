@@ -23,16 +23,16 @@ public:
   YARP_Header header;
   
   // Size of the map
-  double width;
-  double height;
+  float width;
+  float height;
   
   // Coordinates of the origin w/r lower-left corner of map normalized by the width and height of map 
   // These default to 0.5 0.5, i.e. the center of the map   // (0,0 => lower-left corned; 1,1 => upper right corner)
   
-  double u0;
-  double v0;
+  float u0;
+  float v0;
   
-  double resolution;
+  float resolution;
   std::vector<u_int32_t> data;
   
   YARP_Pose origin;
@@ -40,8 +40,8 @@ public:
   YARP_OccupancyGrid_msg():width(0), height(0), u0(0), v0(0), resolution(0){
   }
   
-  YARP_OccupancyGrid_msg(const double& _width, const double& _height, const double& _resolution, 
-			 const double& _u0=0.5, const double& _v0=0.5): 
+  YARP_OccupancyGrid_msg(const float& _width, const float& _height, const float& _resolution, 
+			 const float& _u0=0.5, const float& _v0=0.5): 
 			 width(_width), height(_height), u0(_u0), v0(_v0), resolution(_resolution){
   }
   

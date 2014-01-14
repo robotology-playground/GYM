@@ -32,19 +32,19 @@ public:
   YARP_Header header;
   
   // Size of the map
-  double width;
-  double height;
+  float width;
+  float height;
   
   // Coordinates of the origin w/r lower-left corner of map normalized by the width and height of map 
   // These default to 0.5 0.5, i.e. the center of the map   // (0,0 => lower-left corned; 1,1 => upper right corner)
   
-  double u0;
-  double v0;
+  float u0;
+  float v0;
   
   uint cols;
   uint rows;
   
-  double resolution;
+  float resolution;
   std::vector<u_int32_t> data;
   
   // Pose
@@ -52,24 +52,24 @@ public:
     
   OccupancyGrid();
   
-  OccupancyGrid(const double& _width, const double& _height, const double& _resolution, 
-                     const double& _u0=0.5, const double& _v0=0.5);
+  OccupancyGrid(const float& _width, const float& _height, const float& _resolution, 
+                     const float& _u0=0.5, const float& _v0=0.5);
   
   OccupancyGrid(const YARP_OccupancyGrid_msg&);
 
-  bool set_value_rc(uint row, uint col, const double& value);
+  bool set_value_rc(uint row, uint col, const float& value);
   
-  bool get_value_rc(uint row, uint col, double &value) const;
+  bool get_value_rc(uint row, uint col, float &value) const;
   
-  double value_rc(uint row, uint col) const;
+  float value_rc(uint row, uint col) const;
       
-  bool set_value_xy(double x, double y, const double& value);
+  bool set_value_xy(float x, float y, const float& value);
   
-  bool get_value_xy(double x, double y, double& value) const;
+  bool get_value_xy(float x, float y, float& value) const;
   
-  double value_xy(double x, double y) const;
+  float value_xy(float x, float y) const;
       
-  bool is_in_xy(double x, double y) const;
+  bool is_in_xy(float x, float y) const;
     
   bool is_in_rc(uint row, uint col) const;
 
@@ -77,21 +77,21 @@ public:
 
   void fill_msg(YARP_OccupancyGrid_msg&);
   
-  uint get_col(double x) const;
+  uint get_col(float x) const;
   
-  uint get_row(double y) const;
+  uint get_row(float y) const;
     
-  double get_x(uint col) const;
+  float get_x(uint col) const;
   
-  double get_y(uint row) const;
+  float get_y(uint row) const;
 private:
   
   size_t get_idx_rc(uint row, uint col) const;
   
-  uint get_idx_xy(double x, double y) const;
+  uint get_idx_xy(float x, float y) const;
 
-  void init(const double& _width, const double& _height, const double& _resolution, 
-            const double& _u0, const double& _v0);
+  void init(const float& _width, const float& _height, const float& _resolution, 
+            const float& _u0, const float& _v0);
   
   void init(bool zero=true);
   

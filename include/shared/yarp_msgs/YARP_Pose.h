@@ -35,6 +35,8 @@ public:
     
     return !connection.isError();
   }
+
+  
 };
 
 #endif
