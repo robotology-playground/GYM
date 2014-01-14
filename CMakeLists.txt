@@ -8,8 +8,13 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O4 -g") # -g for debugging
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  PCL
 )
+
+# find PCL
+find_package(PCL 1.3 REQUIRED COMPONENTS common io)
+link_directories(${PCL_LIBRARY_DIRS})
+
+add_definitions(${PCL_DEFINITIONS})
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -97,11 +102,13 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
  add_library(shared
    src/OccupancyGrid.cpp
+   #${PCL_LIBRARIES}
  )
 
 ## Declare a cpp executable
