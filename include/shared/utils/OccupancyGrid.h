@@ -75,6 +75,8 @@ public:
 
   void print();
 
+  void print_human();
+  
   void fill_msg(YARP_OccupancyGrid_msg&);
   
   uint get_col(float x) const;
