@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 # find PCL
-find_package(PCL 1.3 REQUIRED COMPONENTS common io)
+find_package(PCL 1.7 REQUIRED COMPONENTS common)# io)
 link_directories(${PCL_LIBRARY_DIRS})
 
 add_definitions(${PCL_DEFINITIONS})
