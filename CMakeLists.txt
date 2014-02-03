@@ -11,9 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 # find PCL
-find_package(PCL 1.7 REQUIRED COMPONENTS common)# io)
+find_package(PCL 1.7 REQUIRED COMPONENTS common)
 link_directories(${PCL_LIBRARY_DIRS})
-
 add_definitions(${PCL_DEFINITIONS})
 
 ## System dependencies are found with CMake's conventions
