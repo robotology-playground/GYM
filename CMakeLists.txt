@@ -15,6 +15,10 @@ find_package(PCL 1.7 REQUIRED COMPONENTS common)
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
+# find YARP
+find_package(YARP 2.3.60)
+include_directories(${YARP_INCLUDE_DIRS})
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
