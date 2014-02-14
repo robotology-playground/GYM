@@ -40,3 +40,13 @@ add_library(planner_msgs
   src/planner_msgs/flat_walk_cmd.cpp
   src/planner_msgs/flat_walk_plan.cpp
 )
+
+install(TARGETS drc_shared planner_msgs
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
