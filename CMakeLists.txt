@@ -31,12 +31,12 @@ include_directories(
 )
 
 ## Declare a cpp library
- add_library(drc_shared
-   src/OccupancyGrid.cpp
-   #${PCL_LIBRARIES}
+add_library(drc_shared
+  src/OccupancyGrid.cpp
+  #${PCL_LIBRARIES}
  )
 
- add_library(planner_msgs
-   src/planner_msgs/flat_walk_cmd.cpp
-   src/planner_msgs/flat_walk_plan.cpp
- )
+add_library(planner_msgs
+  src/planner_msgs/flat_walk_cmd.cpp
+  src/planner_msgs/flat_walk_plan.cpp
+)
