@@ -10,15 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
 )
 
-# find PCL
-find_package(PCL 1.7 REQUIRED COMPONENTS common)
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-
-# find YARP
-find_package(YARP 2.3.60)
-include_directories(${YARP_INCLUDE_DIRS})
-
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES drc_shared planner_msgs
@@ -27,8 +18,18 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
 )
+
+# find PCL
+find_package(PCL 1.7 REQUIRED COMPONENTS common)
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+include_directories(${PCL_INCLUDE_DIRS})
+
+# find YARP
+find_package(YARP 2.3.60)
+include_directories(${YARP_INCLUDE_DIRS})
+
 
 ## Declare a cpp library
 add_library(drc_shared
