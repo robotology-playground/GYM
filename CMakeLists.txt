@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES drc_shared planner_msgs
+  LIBRARIES drc_shared planner_msgs 
 )
 
 include_directories(
@@ -34,9 +34,10 @@ include_directories(${YARP_INCLUDE_DIRS})
 ## Declare a cpp library
 add_library(drc_shared
   src/OccupancyGrid.cpp
+  src/utils/module_state_streamer.cpp
   #${PCL_LIBRARIES}
- )
-
+)
+ 
 add_library(planner_msgs
   src/planner_msgs/flat_walk_cmd.cpp
   src/planner_msgs/flat_walk_plan.cpp
