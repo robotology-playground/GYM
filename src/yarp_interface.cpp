@@ -9,6 +9,61 @@
 
 using namespace walkman::drc;
 
+
+yarp_single_chain_interface::yarp_single_chain_interface(std::string kinematic_chain,std::string module_prefix):module_prefix(module_prefix),kinematic_chain(kinematic_chain)
+{
+    if(createPolyDriver(kinematic_chain.c_str(), polyDriver))
+    {
+        polyDriver.view(encodersMotor);
+        polyDriver.view(positionDirect);
+        polyDriver.view(controlMode);
+        polyDriver.view(positionControl);
+        isAvailable = true;
+    }
+    
+}
+
+yarp::sig::Vector yarp_single_chain_interface::sense(){
+    
+}
+
+void yarp_single_chain_interface::sense(yarp::sig::Vector& q_sensed){
+    
+}
+
+void yarp_single_chain_interface::move(const yarp::sig::Vector& q_d){
+    
+}
+
+bool yarp_single_chain_interface::createPolyDriver(const std::string& kinematic_chain, yarp::dev::PolyDriver& polyDriver)
+{
+    yarp::os::Property options;
+    options.put("robot", "coman");
+    options.put("device", "remote_controlboard");
+    
+    yarp::os::ConstString s;
+    s = module_prefix + kinematic_chain;
+    
+    options.put("local", s.c_str());
+    
+    yarp::os::ConstString ss;
+    ss = "/coman/" + kinematic_chain;
+    options.put("remote", ss.c_str());
+    
+    polyDriver.open(options);
+    if (!polyDriver.isValid()) {
+        std::cout<<"Device "<<kinematic_chain<<" not available."<<std::endl;
+        return false;
+    }
+    else {
+        std::cout<<"Device "<<kinematic_chain<<" available."<<std::endl;
+        return true;
+    }
+}
+
+
+
+/**
 yarp_interface::yarp_interface()
 {
     isTorsoAvailable = false;
@@ -750,6 +805,9 @@ bool yarp_interface::getKBDCommand(char& cmd) {
     }
     return false;
 }
+
+
+*/
 // #endif
 
 

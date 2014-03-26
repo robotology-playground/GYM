@@ -67,7 +67,7 @@ private:
 class yarp_single_chain_interface
 {
 public:  
-    yarp_single_chain_interface(std::string kinematic_chain);
+    yarp_single_chain_interface(std::string kinematic_chain, std::string module_prefix);
     yarp::sig::Vector sense();
     void sense(yarp::sig::Vector& q_sensed);
     void move(const yarp::sig::Vector& q_d);
@@ -87,9 +87,19 @@ private:
     yarp::dev::IControlMode *controlMode;
     yarp::dev::IPositionControl2 *positionControl;
     yarp::dev::PolyDriver polyDriver;
+    std::string module_prefix;
     
 };   
-    
+ 
+
+
+
+
+
+
+
+
+/*
 class yarp_interface
 {
 public:
@@ -253,7 +263,7 @@ private:
     
     bool createPolyDriver ( const std::string &kinematic_chain, yarp::dev::PolyDriver &polyDriver );
 
-};
+};*/
 
 }
 }
