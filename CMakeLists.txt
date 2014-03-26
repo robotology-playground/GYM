@@ -30,6 +30,7 @@ include_directories(${PCL_INCLUDE_DIRS})
 find_package(YARP 2.3.60)
 include_directories(${YARP_INCLUDE_DIRS})
 
+add_subdirectory(src/MotorControlHelpers)
 
 ## Declare a cpp library
 add_library(drc_shared
