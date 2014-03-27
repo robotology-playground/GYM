@@ -1,8 +1,8 @@
 #include <yarp/os/Network.h>
-#include <yarp_command_interface.hpp>
-#include <yarp_status_interface.h>
-#include <yarp_single_chain_interface.h>
-#include <yarp_ft_interface.h>
+#include <drc_shared/yarp_command_interface.hpp>
+#include <drc_shared/yarp_status_interface.h>
+#include <drc_shared/yarp_single_chain_interface.h>
+#include <drc_shared/yarp_ft_interface.h>
 
 using namespace walkman::drc;
 

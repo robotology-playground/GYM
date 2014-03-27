@@ -9,7 +9,11 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O4 -g") # -g for debugging
 find_package(catkin REQUIRED COMPONENTS
   roscpp
 )
-
+set(VARS_PREFIX "DRC_SHARED")
+                            
+find_package(YCM REQUIRED)
+include(YCMDefaultDirs)
+ycm_default_dirs(${VARS_PREFIX})
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES drc_shared planner_msgs 
@@ -33,7 +37,7 @@ include_directories(${YARP_INCLUDE_DIRS})
 add_subdirectory(src/MotorControlHelpers)
 
 ## Declare a cpp library
-add_library(drc_shared
+add_library(drc_shared SHARED
   src/OccupancyGrid.cpp
   src/utils/module_state_streamer.cpp
   src/yarp_status_interface.cpp
@@ -52,7 +56,37 @@ install(TARGETS drc_shared planner_msgs
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+# set_target_properties(drc_shared PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
+#                                               SOVERSION ${${VARS_PREFIX}_VERSION}
+# #                                              PUBLIC_HEADER "${template_lib_HDRS}")
+# )
 
+target_include_directories(drc_shared PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+                                               "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
+                   
+install(TARGETS drc_shared  
+        EXPORT drc_Shared  
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}"   COMPONENT shlib
+        PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/drc_shared" COMPONENT dev)
+
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared)
+
+# install(TARGETS drc_shared planner_msgs
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+
+include(InstallBasicPackageFiles)
+
+install_basic_package_files(drc_Shared VARS_PREFIX ${VARS_PREFIX}
+                                        VERSION "1.0.0"
+                                        TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                        COMPATIBILITY SameMajorVersion
+
+)
+include (AddUninstallTarget)
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
