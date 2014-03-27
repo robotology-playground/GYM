@@ -1,5 +1,5 @@
-#ifndef _YARP_INTERFACE_H_
-#define _YARP_INTERFACE_H_
+#ifndef _YARP_STATUS_INTERFACE_H_
+#define _YARP_STATUS_INTERFACE_H_
 
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
