@@ -30,11 +30,15 @@ include_directories(${PCL_INCLUDE_DIRS})
 find_package(YARP 2.3.60)
 include_directories(${YARP_INCLUDE_DIRS})
 
+add_subdirectory(src/MotorControlHelpers)
 
 ## Declare a cpp library
 add_library(drc_shared
   src/OccupancyGrid.cpp
   src/utils/module_state_streamer.cpp
+  src/yarp_status_interface.cpp
+  src/yarp_ft_interface.cpp
+  src/yarp_single_chain_interface.cpp
   #${PCL_LIBRARIES}
 )
  
@@ -55,3 +59,5 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
+
+add_subdirectory(src/tests)
