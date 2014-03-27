@@ -12,28 +12,28 @@
 
 namespace walkman
 {
-    namespace drc
-    {
+namespace drc
+{
 
 
 template<class command_type> class internal_yarp_command_interface
 {
-    
+
 public:
-    
+
     internal_yarp_command_interface(std::string module_prefix,std::string port_suffix)
     {
         std::string temp="/"+module_prefix+port_suffix;
         command_port.open(temp.c_str());
-        
+
     }
-    
+
     bool getCommand ( command_type& cmd, int& seq_num )
     {
         yarp::os::Bottle* bot_command = command_port.read(false);
-        
+
         int seq_num_i = -1;
-        
+
         if(bot_command != NULL) {
             seq_num_i = bot_command->get(0).asInt();
             command_i.fromBottle(bot_command);
@@ -51,19 +51,54 @@ private:
 template<> class internal_yarp_command_interface<std::string>
 {
 public:
-    
+
     internal_yarp_command_interface(std::string module_prefix,std::string port_suffix)
     {
         command_port.open("/"+module_prefix+port_suffix);
-        
+
     }
-    
+
+    bool getCommand(int& command)
+    {
+        yarp::os::Bottle* bot_command = command_port.read(false);
+
+        if(bot_command != NULL) {
+            command= bot_command->get(0).asInt();
+            return true;
+        }
+        return false;
+    }
+
+    std::string getCommand()
+    {
+
+        yarp::os::Bottle* bot_command = command_port.read(false);
+
+        if(bot_command != NULL) {
+            command_i= bot_command->get(0).asString();
+            return command_i;
+        }
+        return "";
+    }
+
+    bool getCommand (std::string & cmd)
+    {
+        yarp::os::Bottle* bot_command = command_port.read(false);
+
+        if(bot_command != NULL) {
+            command_i= bot_command->get(0).asString();
+            return true;
+        }
+        cmd=command_i;
+        return false;
+    }
+
     bool getCommand ( std::string& cmd, int& seq_num )
     {
         yarp::os::Bottle* bot_command = command_port.read(false);
-        
+
         int seq_num_i = -1;
-        
+
         if(bot_command != NULL) {
             seq_num_i = bot_command->get(0).asInt();
             command_i= bot_command->get(1).asString();
@@ -80,7 +115,7 @@ private:
 
 
 
-template<class command_type> 
+template<class command_type>
 class yarp_custom_command_interface:public internal_yarp_command_interface<command_type>
 {
 public:
@@ -102,11 +137,11 @@ class yarp_switch_interface:public internal_yarp_command_interface<std::string>
 public:
     yarp_switch_interface(std::string module_prefix):internal_yarp_command_interface< std::string >(module_prefix,"/switch:i")
     {
-       
+
     }
 };
 
 
-    }
+}
 }
 #endif
