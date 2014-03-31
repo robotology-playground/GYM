@@ -31,7 +31,7 @@ find_package(YARP 2.3.60)
 include_directories(${YARP_INCLUDE_DIRS})
 
 
-## Declare a cpp library
+## Declare drc_shared library
 add_library(drc_shared
   src/OccupancyGrid.cpp
   src/utils/module_state_streamer.cpp
@@ -43,7 +43,20 @@ add_library(planner_msgs
   src/planner_msgs/flat_walk_plan.cpp
 )
 
-install(TARGETS drc_shared planner_msgs
+# examples
+add_executable(grabber_example src/examples/grabber_example.cpp)
+add_executable(module_state_streamer_example src/examples/module_state_streamer_example.cpp)
+target_link_libraries(module_state_streamer_example
+                      ${YARP_LIBRARIES}
+                      drc_shared
+                      )
+                      
+target_link_libraries(grabber_example
+		      ${YARP_LIBRARIES}
+		      )
+
+install(TARGETS drc_shared planner_msgs 
+  grabber_example module_state_streamer_example # examples, comment this if not needed
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
