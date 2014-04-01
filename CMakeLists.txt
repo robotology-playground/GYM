@@ -24,6 +24,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+# for every file in drc_INCLUDES CMake already sets the property HEADER_FILE_ONLY
+file(GLOB_RECURSE drc_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h)
+
 # find PCL
 find_package(PCL 1.7 REQUIRED COMPONENTS common)
 link_directories(${PCL_LIBRARY_DIRS})
@@ -44,6 +47,7 @@ add_library(drc_shared SHARED
   src/yarp_ft_interface.cpp
   src/yarp_single_chain_interface.cpp
   #${PCL_LIBRARIES}
+  ${drc_INCLUDES}
 )
  
 add_library(planner_msgs
