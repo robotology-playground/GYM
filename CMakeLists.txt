@@ -16,7 +16,7 @@ include(YCMDefaultDirs)
 ycm_default_dirs(${VARS_PREFIX})
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES drc_shared planner_msgs 
+  LIBRARIES drc_shared planner_msgs idynutils
 )
 
 include_directories(
@@ -49,6 +49,8 @@ add_library(drc_shared SHARED
   #${PCL_LIBRARIES}
   ${drc_INCLUDES}
 )
+
+add_library(idynutils SHARED src/idynutils.cpp)
  
 add_library(planner_msgs
   src/planner_msgs/flat_walk_cmd.cpp
@@ -67,7 +69,9 @@ target_link_libraries(grabber_example
 		      ${YARP_LIBRARIES}
 		      )
 
-install(TARGETS drc_shared planner_msgs 
+target_link_libraries(idynutils ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES} orocos-kdl)# urdf kdl_parser)
+
+install(TARGETS drc_shared planner_msgs idynutils
   grabber_example module_state_streamer_example # examples, comment this if not needed
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -87,7 +91,14 @@ install(TARGETS drc_shared
         LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}"   COMPONENT shlib
         PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/drc_shared" COMPONENT dev)
 
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared)
+install(TARGETS idynutils  
+        EXPORT idynUtils  
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}"   COMPONENT shlib
+        PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/idynutils" COMPONENT dev)
+
+        
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared idynutils)
 
  install(TARGETS drc_shared planner_msgs
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
