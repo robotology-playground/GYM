@@ -15,6 +15,89 @@ namespace walkman
 namespace drc
 {
 
+    
+template<class command_type> class internal_yarp_command_sender_interface
+{
+public:
+    internal_yarp_command_sender_interface(std::string module_prefix,std::string port_suffix,yarp::os::Network* network)
+    {
+        std::string temp_o="/"+module_prefix+port_suffix+":o";
+        std::string temp_i="/"+module_prefix+port_suffix+":i";
+        
+        command_port.open(temp_o.c_str());
+        yarp::os::ContactStyle style;
+        style.persistent = true;
+        network->connect(temp_o.c_str(),temp_i.c_str());
+    }
+    
+    bool sendCommand(command_type& cmd, int& seq_num=0)
+    {
+        yarp::os::Bottle& b=command_port.prepare();
+        b=cmd.toBottle();
+        command_port.write();
+    }
+private:
+    yarp::os::BufferedPort<yarp::os::Bottle> command_port;
+};
+    
+
+template<> class internal_yarp_command_sender_interface<std::string>
+{
+public:
+    internal_yarp_command_sender_interface(std::string module_prefix,std::string port_suffix,yarp::os::Network* network)
+    {
+        std::string temp_o="/"+module_prefix+port_suffix+":o";
+        std::string temp_i="/"+module_prefix+port_suffix+":i";
+        
+        command_port.open(temp_o.c_str());
+        yarp::os::ContactStyle style;
+        style.persistent = true;
+        network->connect(temp_o.c_str(),temp_i.c_str());
+    }
+    
+    bool sendCommand(std::string& cmd, int& seq_num=0)
+    {
+        yarp::os::Bottle& b=command_port.prepare();
+        b.add(cmd);
+        command_port.write();
+    }
+    
+    bool sendCommand(int cmd, int& seq_num=0)
+    {
+        yarp::os::Bottle& b=command_port.prepare();
+        b.add(cmd);
+        command_port.write();
+    }
+    
+private:
+    yarp::os::BufferedPort<yarp::os::Bottle> command_port;    
+};
+
+template<class command_type>
+class yarp_custom_command_sender_interface:public internal_yarp_command_sender_interface<command_type>
+{
+public:
+    yarp_custom_command_sender_interface(std::string module_prefix,yarp::os::Network* network):internal_yarp_command_sender_interface< command_type >(module_prefix,"/command",network)
+    {
+    }
+};
+
+class yarp_command_sender_interface:public yarp_custom_command_sender_interface<std::string>
+{
+public:
+    yarp_command_sender_interface(std::string module_prefix,yarp::os::Network* network):yarp_custom_command_sender_interface<std::string>(module_prefix,network)
+    {
+    }
+};
+
+class yarp_switch_sender_interface:public internal_yarp_command_sender_interface<std::string>
+{
+public:
+    yarp_switch_sender_interface(std::string module_prefix,yarp::os::Network* network):internal_yarp_command_sender_interface< std::string >(module_prefix,"/switch",network)
+    {
+        
+    }
+};    
 
 template<class command_type> class internal_yarp_command_interface
 {
