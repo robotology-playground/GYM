@@ -21,6 +21,7 @@ template<class command_type> class internal_yarp_command_sender_interface
 public:
     internal_yarp_command_sender_interface(std::string module_prefix,std::string port_suffix,yarp::os::Network* network)
     {
+        if (module_prefix[0]=='/') module_prefix=module_prefix.substr(1);
         std::string temp_o="/"+module_prefix+port_suffix+":o";
         std::string temp_i="/"+module_prefix+port_suffix+":i";
         
@@ -30,7 +31,7 @@ public:
         network->connect(temp_o.c_str(),temp_i.c_str());
     }
     
-    bool sendCommand(command_type& cmd, int& seq_num=0)
+    bool sendCommand(command_type& cmd, int seq_num=0)
     {
         yarp::os::Bottle& b=command_port.prepare();
         b=cmd.toBottle();
@@ -55,17 +56,17 @@ public:
         network->connect(temp_o.c_str(),temp_i.c_str());
     }
     
-    bool sendCommand(std::string& cmd, int& seq_num=0)
+    bool sendCommand(std::string& cmd, int seq_num=0)
     {
         yarp::os::Bottle& b=command_port.prepare();
-        b.add(cmd);
+        b.addString(cmd);
         command_port.write();
     }
     
-    bool sendCommand(int cmd, int& seq_num=0)
+    bool sendCommand(int cmd, int seq_num=0)
     {
         yarp::os::Bottle& b=command_port.prepare();
-        b.add(cmd);
+        b.addInt(cmd);
         command_port.write();
     }
     
@@ -111,7 +112,7 @@ public:
 
     }
 
-    bool getCommand ( command_type& cmd, int& seq_num )
+    bool getCommand ( command_type& cmd, int seq_num )
     {
         yarp::os::Bottle* bot_command = command_port.read(false);
 
@@ -176,7 +177,7 @@ public:
         return false;
     }
 
-    bool getCommand ( std::string& cmd, int& seq_num )
+    bool getCommand ( std::string& cmd, int seq_num )
     {
         yarp::os::Bottle* bot_command = command_port.read(false);
 

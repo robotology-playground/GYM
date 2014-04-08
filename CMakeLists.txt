@@ -69,7 +69,7 @@ target_link_libraries(grabber_example
 		      ${YARP_LIBRARIES}
 		      )
 
-target_link_libraries(idynutils ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES} orocos-kdl)# urdf kdl_parser)
+target_link_libraries(idynutils ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES} ${orocos_kdl_LIBRARIES})# urdf kdl_parser)
 
 install(TARGETS drc_shared planner_msgs idynutils
   grabber_example module_state_streamer_example # examples, comment this if not needed
