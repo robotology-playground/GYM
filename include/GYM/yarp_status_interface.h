@@ -21,13 +21,14 @@ class yarp_status_interface : public yarp::os::RateThread{
     yarp::os::BufferedPort<yarp::os::Bottle> port;
     std::mutex mtx; 
     std::string port_name;
+    yarp::os::ConstString status_i;
     void send();
     
 public:
     std::string state;            // String description of the module's state (quite common)
     yarp::os::Bottle data;        // Optional additional data
         
-    yarp_status_interface(const std::string& port_name_, const int& period_ms_= 500, 
+        yarp_status_interface(const std::string& module_prefix, const int& period_ms_= 500, 
                             const std::string& init_state_ = "initializing");
     
     void setPort(const std::string& port_name_);
@@ -41,6 +42,24 @@ public:
     void threadRelease();
     
 }; 
+
+
+class yarp_status_receiver_interface{
+
+    yarp::os::BufferedPort<yarp::os::Bottle> port;
+    std::mutex mtx; 
+    std::string port_name;
+        
+public:
+    yarp_status_receiver_interface(const std::string& module_prefix, yarp::os::Network& network);
+    
+    void setPort(const std::string& port_name_);
+    
+    bool getStatus(std::string& status, int& seq_num);
+    
+}; 
+
+
 }
 }
 #endif
