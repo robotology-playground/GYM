@@ -51,7 +51,7 @@ class yarp_status_receiver_interface{
     std::string port_name;
         
 public:
-    yarp_status_receiver_interface(const std::string& module_prefix, yarp::os::Network& network);
+    yarp_status_receiver_interface(const std::string& module_prefix, yarp::os::Network* network);
     
     void setPort(const std::string& port_name_);
     
