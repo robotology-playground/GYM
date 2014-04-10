@@ -36,7 +36,6 @@ void yarp_status_interface::setStatus(const std::string& new_status, int seq_num
 }
 
 void yarp_status_interface::send() {
-    std::unique_lock<std::mutex>lck(mtx);
     yarp::os::Bottle& b = port.prepare();
     b.clear();
     b.addInt(seq_num);
