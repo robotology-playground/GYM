@@ -50,7 +50,7 @@ add_library(drc_shared SHARED
   ${drc_INCLUDES}
 )
 
-add_library(idynutils SHARED src/idynutils.cpp)
+add_library(idynutils SHARED src/idynutils.cpp src/cartesian_utils.cpp)
  
 add_library(planner_msgs
   src/planner_msgs/flat_walk_cmd.cpp
