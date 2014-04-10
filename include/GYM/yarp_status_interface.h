@@ -37,7 +37,7 @@ public:
     
     void run();
     
-    void setStatus(const std::string& new_status, const yarp::os::Bottle& data = yarp::os::Bottle(), int seq_num=0);
+    void setStatus(const std::string& new_status, const yarp::os::Bottle& data, int seq_num=0);
 
   void setStatus(const std::string& new_status, int seq_num=0);
     
