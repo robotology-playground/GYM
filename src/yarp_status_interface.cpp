@@ -18,7 +18,7 @@ void yarp_status_interface::run() {
     send();
 }
 
-void yarp_status_interface::setStatus(const std::string& new_status, const yarp::os::Bottle& data_, int seq_num_i=0) {
+void yarp_status_interface::setStatus(const std::string& new_status, const yarp::os::Bottle& data_, int seq_num_i) {
     std::unique_lock<std::mutex>lck(mtx);
     seq_num=seq_num_i;
     state = new_status;
@@ -27,7 +27,7 @@ void yarp_status_interface::setStatus(const std::string& new_status, const yarp:
     send();
 }
 
-void yarp_status_interface::setStatus(const std::string& new_status, int seq_num_i=0) {
+void yarp_status_interface::setStatus(const std::string& new_status, int seq_num_i) {
     std::unique_lock<std::mutex>lck(mtx);
     seq_num=seq_num_i;
     state = new_status;

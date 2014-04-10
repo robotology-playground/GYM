@@ -24,7 +24,7 @@ class yarp_status_interface : public yarp::os::RateThread{
     yarp::os::ConstString status_i;
     bool data_set;
     int seq_num;
-    void send(int seq_num);
+    void send();
     
 public:
     std::string state;            // String description of the module's state (quite common)
@@ -37,7 +37,9 @@ public:
     
     void run();
     
-    void setStatus(const std::string& new_status, const yarp::os::Bottle& data = yarp::os::Bottle());
+    void setStatus(const std::string& new_status, const yarp::os::Bottle& data = yarp::os::Bottle(), int seq_num=0);
+
+  void setStatus(const std::string& new_status, int seq_num=0);
     
     bool threadInit();
     
@@ -57,7 +59,7 @@ public:
     
     void setPort(const std::string& port_name_);
     
-    bool getStatus(std::string& status, int& seq_num, yarp::os::Bottle* bottle_out);
+    bool getStatus(std::string& status, int& seq_num, yarp::os::Bottle* bottle_out=0);
     
 }; 
 
