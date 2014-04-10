@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drc_shared)
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O4 -g") # -g for debugging 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++0x")
+
+FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(ICUB REQUIRED)
+FIND_PACKAGE(iDynTree REQUIRED)
+FIND_PACKAGE(kdl_codyco REQUIRED)
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -18,7 +24,8 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES drc_shared planner_msgs idynutils
 )
-
+SET(ROS_HYDRO_LIB_FOLDER /opt/ros/hydro/lib/)
+LINK_DIRECTORIES(${ROS_HYDRO_LIB_FOLDER} )
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -69,7 +76,10 @@ target_link_libraries(grabber_example
 		      ${YARP_LIBRARIES}
 		      )
 
-target_link_libraries(idynutils ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES} ${orocos_kdl_LIBRARIES})# urdf kdl_parser)
+target_link_libraries(idynutils ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES} ${orocos_kdl_LIBRARIES}
+orocos-kdl urdf kdl_parser
+                      ${YARP_LIBRARIES} icubmod ${ICUB_LIBRARIES}
+)
 
 install(TARGETS drc_shared planner_msgs idynutils
   grabber_example module_state_streamer_example # examples, comment this if not needed
