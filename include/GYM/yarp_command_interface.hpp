@@ -21,7 +21,7 @@ template<class command_type>
 class yarp_custom_command_sender_interface:public internal_yarp_command_sender_interface<command_type>
 {
 public:
-    yarp_custom_command_sender_interface(std::string module_prefix,yarp::os::Network* network):internal_yarp_command_sender_interface< command_type >(module_prefix,"/command",network)
+    yarp_custom_command_sender_interface(const std::string& module_prefix,yarp::os::Network* network):internal_yarp_command_sender_interface< command_type >(module_prefix,"/command",network)
     {
     }
 };
@@ -29,7 +29,7 @@ public:
 class yarp_command_sender_interface:public yarp_custom_command_sender_interface<std::string>
 {
 public:
-    yarp_command_sender_interface(std::string module_prefix,yarp::os::Network* network):yarp_custom_command_sender_interface<std::string>(module_prefix,network)
+    yarp_command_sender_interface(const std::string& module_prefix,yarp::os::Network* network):yarp_custom_command_sender_interface<std::string>(module_prefix,network)
     {
     }
 };
@@ -37,7 +37,7 @@ public:
 class yarp_switch_sender_interface:public internal_yarp_command_sender_interface<std::string>
 {
 public:
-    yarp_switch_sender_interface(std::string module_prefix,yarp::os::Network* network):internal_yarp_command_sender_interface< std::string >(module_prefix,"/switch",network)
+    yarp_switch_sender_interface(const std::string& module_prefix,yarp::os::Network* network):internal_yarp_command_sender_interface< std::string >(module_prefix,"/switch",network)
     {
         
     }
@@ -47,7 +47,7 @@ template<class command_type>
 class yarp_custom_command_interface:public internal_yarp_command_interface<command_type>
 {
 public:
-    yarp_custom_command_interface(std::string module_prefix):internal_yarp_command_interface< command_type >(module_prefix,"/command:i")
+    yarp_custom_command_interface(const std::string& module_prefix):internal_yarp_command_interface< command_type >(module_prefix,"/command:i")
     {
     }
 };
@@ -55,7 +55,7 @@ public:
 class yarp_command_interface:public yarp_custom_command_interface<std::string>
 {
 public:
-    yarp_command_interface(std::string module_prefix):yarp_custom_command_interface<std::string>(module_prefix)
+    yarp_command_interface(const std::string& module_prefix):yarp_custom_command_interface<std::string>(module_prefix)
     {
     }
 };
@@ -63,7 +63,7 @@ public:
 class yarp_switch_interface:public internal_yarp_command_interface<std::string>
 {
 public:
-    yarp_switch_interface(std::string module_prefix):internal_yarp_command_interface< std::string >(module_prefix,"/switch:i")
+    yarp_switch_interface(const std::string& module_prefix):internal_yarp_command_interface< std::string >(module_prefix,"/switch:i")
     {
 
     }

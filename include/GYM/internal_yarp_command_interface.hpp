@@ -18,7 +18,7 @@ namespace walkman
         template<class command_type> class internal_yarp_command_sender_interface
         {
         public:
-            internal_yarp_command_sender_interface(std::string module_prefix,std::string port_suffix,yarp::os::Network* network)
+            internal_yarp_command_sender_interface(const std::string& module_prefix,const std::string& port_suffix,yarp::os::Network* network)
             {
                 if (module_prefix[0]=='/') module_prefix=module_prefix.substr(1);
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
@@ -44,7 +44,7 @@ namespace walkman
         template<> class internal_yarp_command_sender_interface<std::string>
         {
         public:
-            internal_yarp_command_sender_interface(std::string module_prefix,std::string port_suffix,yarp::os::Network* network)
+            internal_yarp_command_sender_interface(const std::string& module_prefix,const std::string& port_suffix,yarp::os::Network* network)
             {
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
@@ -55,9 +55,10 @@ namespace walkman
                 network->connect(temp_o.c_str(),temp_i.c_str());
             }
             
-            bool sendCommand(std::string& cmd, int seq_num=0)
+            bool sendCommand(const std::string& cmd, int seq_num=0)
             {
                 yarp::os::Bottle& b=command_port.prepare();
+                b.clear();
                 b.addString(cmd);
                 command_port.write();
             }
@@ -65,6 +66,7 @@ namespace walkman
             bool sendCommand(int cmd, int seq_num=0)
             {
                 yarp::os::Bottle& b=command_port.prepare();
+                b.clear();
                 b.addInt(cmd);
                 command_port.write();
             }
@@ -80,7 +82,7 @@ namespace walkman
             
         public:
             
-            internal_yarp_command_interface(std::string module_prefix,std::string port_suffix)
+            internal_yarp_command_interface(const std::string& module_prefix,const std::string& port_suffix)
             {
                 std::string temp="/"+module_prefix+port_suffix;
                 command_port.open(temp.c_str());
@@ -111,7 +113,7 @@ namespace walkman
         {
         public:
             
-            internal_yarp_command_interface(std::string module_prefix,std::string port_suffix)
+            internal_yarp_command_interface(const std::string& module_prefix,const std::string& port_suffix)
             {
                 command_port.open("/"+module_prefix+port_suffix);
                 
