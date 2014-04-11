@@ -16,6 +16,7 @@ namespace walkman
 {
 namespace drc
 {
+
 class yarp_status_interface : public yarp::os::RateThread{
     
     yarp::os::BufferedPort<yarp::os::Bottle> port;
@@ -39,7 +40,7 @@ public:
     
     void setStatus(const std::string& new_status, const yarp::os::Bottle& data, int seq_num=0);
 
-  void setStatus(const std::string& new_status, int seq_num=0);
+    void setStatus(const std::string& new_status, int seq_num=0);
     
     bool threadInit();
     

@@ -27,7 +27,7 @@ namespace walkman
                 command_port.open(temp_o.c_str());
                 yarp::os::ContactStyle style;
                 style.persistent = true;
-                network->connect(temp_o.c_str(),temp_i.c_str());
+                network->connect(temp_o.c_str(),temp_i.c_str(), style);
             }
             
             bool sendCommand(command_type& cmd, int seq_num=0)
@@ -52,7 +52,7 @@ namespace walkman
                 command_port.open(temp_o.c_str());
                 yarp::os::ContactStyle style;
                 style.persistent = true;
-                network->connect(temp_o.c_str(),temp_i.c_str());
+                network->connect(temp_o.c_str(),temp_i.c_str(), style);
             }
             
             bool sendCommand(const std::string& cmd, int seq_num=0)
