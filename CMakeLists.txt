@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drc_shared)
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++0x")
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
 
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(ICUB REQUIRED)

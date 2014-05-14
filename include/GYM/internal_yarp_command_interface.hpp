@@ -148,6 +148,7 @@ namespace walkman
                 
                 if(bot_command != NULL) {
                     command_i= bot_command->get(0).asString();
+		    cmd=command_i;
                     return true;
                 }
                 cmd=command_i;
@@ -163,6 +164,7 @@ namespace walkman
                 if(bot_command != NULL) {
                     seq_num_i = bot_command->get(0).asInt();
                     command_i= bot_command->get(1).asString();
+		    cmd=command_i;
                     return true;
                 }
                 cmd=command_i;
