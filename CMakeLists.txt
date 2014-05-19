@@ -7,6 +7,8 @@ FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(ICUB REQUIRED)
 FIND_PACKAGE(iDynTree REQUIRED)
 FIND_PACKAGE(kdl_codyco REQUIRED)
+FIND_PACKAGE(srdfdom REQUIRED)
+FIND_PACKAGE(moveit_core REQUIRED)
 
 
 ## Find catkin macros and libraries
@@ -76,9 +78,8 @@ target_link_libraries(grabber_example
 		      ${YARP_LIBRARIES}
 		      )
 
-target_link_libraries(idynutils ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES} ${orocos_kdl_LIBRARIES}
-orocos-kdl urdf kdl_parser
-                      ${YARP_LIBRARIES} icubmod ${ICUB_LIBRARIES}
+target_link_libraries(idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES} ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES} ${orocos_kdl_LIBRARIES}
+orocos-kdl urdf kdl_parser ${YARP_LIBRARIES} icubmod ${ICUB_LIBRARIES}
 )
 
 install(TARGETS drc_shared planner_msgs idynutils
