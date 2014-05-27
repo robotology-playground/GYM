@@ -1,4 +1,5 @@
 #include <yarp/os/all.h>
+#include <drc_shared/yarp_command_interface.hpp>
 
 /**
  * @brief auxiliary struct to specify a constraint between T and B.

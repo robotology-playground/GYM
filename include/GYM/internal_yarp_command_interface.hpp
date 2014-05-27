@@ -98,9 +98,10 @@ namespace walkman
                 if(bot_command != NULL) {
                     seq_num_i = bot_command->get(0).asInt();
                     command_i.fromBottle(bot_command);
+		    cmd=command_i;
                     return true;
                 }
-                cmd=command_i;
+                
                 seq_num=seq_num_i;
                 return false;
             }
