@@ -18,8 +18,9 @@ namespace walkman
         template<class command_type> class internal_yarp_command_sender_interface
         {
         public:
-            internal_yarp_command_sender_interface(const std::string& module_prefix,const std::string& port_suffix,yarp::os::Network* network)
+            internal_yarp_command_sender_interface(const std::string& module_prefix_,const std::string& port_suffix,yarp::os::Network* network)
             {
+	        auto module_prefix=module_prefix_;
                 if (module_prefix[0]=='/') module_prefix=module_prefix.substr(1);
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
