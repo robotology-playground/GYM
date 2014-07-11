@@ -34,6 +34,7 @@ namespace walkman
             bool sendCommand(command_type& cmd, int seq_num=0)
             {
                 yarp::os::Bottle& b=command_port.prepare();
+		b.clear();
                 b.append(cmd.toBottle());
 		b.addInt(seq_num);
                 command_port.write();
@@ -100,9 +101,11 @@ namespace walkman
                 
                 if(bot_command != NULL) {
                     seq_num_i = bot_command->pop().asInt();
-                    command_i.fromBottle(bot_command);
+		    command_i.fromBottle(bot_command);
 		    cmd=command_i;
-                    return true;
+		    seq_num=seq_num_i;
+                    
+		    return true;
                 }
                 
                 seq_num=seq_num_i;
