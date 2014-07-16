@@ -18,8 +18,9 @@ namespace walkman
         template<class command_type> class internal_yarp_command_sender_interface
         {
         public:
-            internal_yarp_command_sender_interface(const std::string& module_prefix,const std::string& port_suffix,yarp::os::Network* network)
+            internal_yarp_command_sender_interface(const std::string& module_prefix_,const std::string& port_suffix,yarp::os::Network* network)
             {
+	        auto module_prefix=module_prefix_;
                 if (module_prefix[0]=='/') module_prefix=module_prefix.substr(1);
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
@@ -33,7 +34,9 @@ namespace walkman
             bool sendCommand(command_type& cmd, int seq_num=0)
             {
                 yarp::os::Bottle& b=command_port.prepare();
-                b=cmd.toBottle();
+		b.clear();
+                b.append(cmd.toBottle());
+		b.addInt(seq_num);
                 command_port.write();
             }
         private:
@@ -60,6 +63,7 @@ namespace walkman
                 yarp::os::Bottle& b=command_port.prepare();
                 b.clear();
                 b.addString(cmd);
+		b.addInt(seq_num);
                 command_port.write();
             }
             
@@ -89,17 +93,19 @@ namespace walkman
                 
             }
             
-            bool getCommand ( command_type& cmd, int seq_num )
+            bool getCommand ( command_type& cmd, int& seq_num )
             {
                 yarp::os::Bottle* bot_command = command_port.read(false);
                 
                 int seq_num_i = -1;
                 
                 if(bot_command != NULL) {
-                    seq_num_i = bot_command->get(0).asInt();
-                    command_i.fromBottle(bot_command);
+                    seq_num_i = bot_command->pop().asInt();
+		    command_i.fromBottle(bot_command);
 		    cmd=command_i;
-                    return true;
+		    seq_num=seq_num_i;
+                    
+		    return true;
                 }
                 
                 seq_num=seq_num_i;
@@ -156,15 +162,15 @@ namespace walkman
                 return false;
             }
             
-            bool getCommand ( std::string& cmd, int seq_num )
+            bool getCommand ( std::string& cmd, int& seq_num )
             {
                 yarp::os::Bottle* bot_command = command_port.read(false);
                 
                 int seq_num_i = -1;
                 
                 if(bot_command != NULL) {
-                    seq_num_i = bot_command->get(0).asInt();
-                    command_i= bot_command->get(1).asString();
+                    seq_num_i = bot_command->pop().asInt();
+                    command_i= bot_command->get(0).asString();
 		    cmd=command_i;
                     return true;
                 }
