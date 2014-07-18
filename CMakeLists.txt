@@ -4,7 +4,6 @@ project(drc_shared)
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
 
 FIND_PACKAGE(YARP REQUIRED)
-FIND_PACKAGE(ICUB REQUIRED)
 FIND_PACKAGE(iDynTree REQUIRED)
 FIND_PACKAGE(kdl_codyco REQUIRED)
 FIND_PACKAGE(srdfdom REQUIRED)
@@ -79,8 +78,7 @@ target_link_libraries(grabber_example
 		      )
 
 target_link_libraries(idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES} ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES} ${orocos_kdl_LIBRARIES}
-orocos-kdl urdf kdl_parser ${YARP_LIBRARIES} icubmod ${ICUB_LIBRARIES}
-)
+orocos-kdl urdf kdl_parser ${YARP_LIBRARIES} icubmod )
 
 install(TARGETS drc_shared planner_msgs idynutils
   grabber_example module_state_streamer_example # examples, comment this if not needed
