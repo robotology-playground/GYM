@@ -9,7 +9,6 @@ FIND_PACKAGE(kdl_codyco REQUIRED)
 FIND_PACKAGE(srdfdom REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
 
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -26,7 +25,8 @@ catkin_package(
   LIBRARIES drc_shared planner_msgs idynutils
 )
 SET(ROS_HYDRO_LIB_FOLDER /opt/ros/hydro/lib/)
-LINK_DIRECTORIES(${ROS_HYDRO_LIB_FOLDER} )
+LINK_DIRECTORIES(${ROS_HYDRO_LIB_FOLDER} ${WALKMAN_LIB_FOLDER} ${KDL_CODYCO_LIB_FOLDER} ${CODYCO_LIB_FOLDER})
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
