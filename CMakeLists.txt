@@ -8,6 +8,7 @@ FIND_PACKAGE(iDynTree REQUIRED)
 FIND_PACKAGE(kdl_codyco REQUIRED)
 FIND_PACKAGE(srdfdom REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
+FIND_PACKAGE(ICUB REQUIRED)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
