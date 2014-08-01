@@ -10,3 +10,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} )
 add_executable(${PROJECTNAME}_bin test_interfaces.cpp)
 TARGET_LINK_LIBRARIES(${PROJECTNAME}_bin drc_shared ${YARP_LIBRARIES} ${ACE_LIBRARIES})
 
+enable_testing()
+add_test(test_drc_shared    ${PROJECTNAME}_bin}
+                            WORKING_DIRECTORY "devel/lib/drc_shared")

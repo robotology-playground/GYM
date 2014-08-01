@@ -3,6 +3,7 @@
 #include <drc_shared/yarp_status_interface.h>
 #include <drc_shared/yarp_single_chain_interface.h>
 #include <drc_shared/yarp_ft_interface.h>
+#include <drc_shared/yarp_IMU_interface.h>
 
 using namespace walkman::drc;
 
@@ -19,6 +20,12 @@ int main(int argc, char* argv[])
     yarp_status_interface c("test_module");
     yarp_ft_interface d("right_arm");
     yarp_single_chain_interface e("right_arm","test_module");
-        
+
+    yarp_IMU_interface imu("test_module");
+
+    yarp::sig::Vector imuData = imu.sense();
+    std::cout << "IMU data reading:"
+              << std::endl
+              << imuData.toString() << std::endl;
         
 }

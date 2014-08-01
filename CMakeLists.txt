@@ -50,6 +50,7 @@ find_package(YARP 2.3.60)
 include_directories(${YARP_INCLUDE_DIRS})
 
 add_subdirectory(src/MotorControlHelpers)
+add_subdirectory(src/tests)
 
 ## Declare drc_shared library
 add_library(drc_shared SHARED
@@ -57,6 +58,7 @@ add_library(drc_shared SHARED
   src/utils/module_state_streamer.cpp
   src/yarp_status_interface.cpp
   src/yarp_ft_interface.cpp
+  src/yarp_IMU_interface.cpp
   src/yarp_single_chain_interface.cpp
   #${PCL_LIBRARIES}
   ${drc_INCLUDES}
@@ -68,6 +70,8 @@ add_library(planner_msgs
   src/planner_msgs/flat_walk_cmd.cpp
   src/planner_msgs/flat_walk_plan.cpp
 )
+
+target_link_libraries(drc_shared ${iDynTree_LIBRARIES})
 
 # examples
 add_executable(grabber_example src/examples/grabber_example.cpp)
@@ -127,12 +131,12 @@ install_basic_package_files(drc_Shared VARS_PREFIX ${VARS_PREFIX}
                                         COMPATIBILITY SameMajorVersion
 
 )
-include (AddUninstallTarget)
+
+include(AddUninstallTarget)
+
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
-
-add_subdirectory(src/tests)
