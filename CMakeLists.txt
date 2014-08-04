@@ -70,14 +70,15 @@ add_library(drc_shared SHARED
   ${drc_INCLUDES}
 )
 
-add_library(idynutils SHARED src/idynutils.cpp src/cartesian_utils.cpp)
+add_library(idynutils SHARED src/idynutils.cpp
+                             src/cartesian_utils.cpp)
  
 add_library(planner_msgs
   src/planner_msgs/flat_walk_cmd.cpp
   src/planner_msgs/flat_walk_plan.cpp
 )
 
-target_link_libraries(drc_shared ${iDynTree_LIBRARIES})
+target_link_libraries(drc_shared   ${iDynTree_LIBRARIES})
 
 # examples
 add_executable(grabber_example src/examples/grabber_example.cpp)
@@ -102,6 +103,7 @@ install(TARGETS drc_shared planner_msgs idynutils
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
 # set_target_properties(drc_shared PROPERTIES VERSION ${${VARS_PREFIX}_VERSION}
 #                                               SOVERSION ${${VARS_PREFIX}_VERSION}
 # #                                              PUBLIC_HEADER "${template_lib_HDRS}")
@@ -111,9 +113,10 @@ target_include_directories(drc_shared PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_D
                                                "$<INSTALL_INTERFACE:${${VARS_PREFIX}_INSTALL_INCLUDEDIR}>")
                    
 install(TARGETS drc_shared  
-        EXPORT drc_Shared  
+        EXPORT drc_Shared
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
         RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
-        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}"   COMPONENT shlib
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib
         PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/drc_shared" COMPONENT dev)
 
 install(TARGETS idynutils  
@@ -123,20 +126,15 @@ install(TARGETS idynutils
         PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/idynutils" COMPONENT dev)
 
         
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared idynutils)
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared idynutils drc_utils)
 
- install(TARGETS drc_shared planner_msgs
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
 
 include(InstallBasicPackageFiles)
 
 install_basic_package_files(drc_Shared VARS_PREFIX ${VARS_PREFIX}
-                                        VERSION "1.0.0"
-                                        TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
-                                        COMPATIBILITY SameMajorVersion
+                                       VERSION "1.0.0"
+                                       TARGETS_PROPERTY ${VARS_PREFIX}_TARGETS
+                                       COMPATIBILITY SameMajorVersion
 
 )
 
