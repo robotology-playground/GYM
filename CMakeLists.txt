@@ -15,14 +15,14 @@ endif()
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(iDynTree REQUIRED)
 FIND_PACKAGE(kdl_codyco REQUIRED)
+FIND_PACKAGE(orocos_kdl REQUIRED)
 FIND_PACKAGE(srdfdom REQUIRED)
+FIND_PACKAGE(urdf REQUIRED)
+FIND_PACKAGE(rosconsole REQUIRED)
+FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
 FIND_PACKAGE(ICUB REQUIRED)
 
-set(ROS_LIB_FOLDER $ENV{ROS_LIB_FOLDER} CACHE STRING "ros lib folder")
-
-message(STATUS ${ROS_LIB_FOLDER})
- 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -38,7 +38,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES drc_shared planner_msgs idynutils
 )
-LINK_DIRECTORIES(${ROS_LIB_FOLDER} ${WALKMAN_LIB_FOLDER} ${KDL_CODYCO_LIB_FOLDER} ${CODYCO_LIB_FOLDER})
 
 include_directories(
   include
@@ -94,8 +93,10 @@ target_link_libraries(grabber_example
 		      ${YARP_LIBRARIES}
 		      )
 
-target_link_libraries(idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES} ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES} ${orocos_kdl_LIBRARIES}
-orocos-kdl urdf kdl_parser ${YARP_LIBRARIES} icubmod )
+target_link_libraries(idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
+                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
+                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
+                                ${YARP_LIBRARIES} icubmod)
 
 install(TARGETS drc_shared planner_msgs idynutils
   grabber_example module_state_streamer_example # examples, comment this if not needed
