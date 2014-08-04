@@ -67,7 +67,6 @@ add_library(drc_shared SHARED
   src/yarp_ft_interface.cpp
   src/yarp_IMU_interface.cpp
   src/yarp_single_chain_interface.cpp
-  #${PCL_LIBRARIES}
   ${drc_INCLUDES}
 )
 
