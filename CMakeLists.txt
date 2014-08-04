@@ -36,7 +36,7 @@ include(YCMDefaultDirs)
 ycm_default_dirs(${VARS_PREFIX})
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES drc_shared planner_msgs idynutils
+  LIBRARIES drc_shared planner_msgs idynutils drc_utils
 )
 
 include_directories(
@@ -59,6 +59,10 @@ include_directories(${YARP_INCLUDE_DIRS})
 add_subdirectory(src/MotorControlHelpers)
 add_subdirectory(src/tests)
 
+## Declare drc_utils library for utils containing exotic shared libraries
+add_library(drc_utils SHARED
+    src/utils/convex_hull.cpp)
+
 ## Declare drc_shared library
 add_library(drc_shared SHARED
   src/OccupancyGrid.cpp
@@ -78,6 +82,9 @@ add_library(planner_msgs
   src/planner_msgs/flat_walk_plan.cpp
 )
 
+target_link_libraries(drc_utils    ${PCL_LIBRARIES}
+                                   ${rosconsole_LIBRARIES})
+
 target_link_libraries(drc_shared   ${iDynTree_LIBRARIES})
 
 # examples
@@ -86,6 +93,7 @@ add_executable(module_state_streamer_example src/examples/module_state_streamer_
 target_link_libraries(module_state_streamer_example
                       ${YARP_LIBRARIES}
                       drc_shared
+                      drc_utils
                       )
                       
 target_link_libraries(grabber_example
@@ -97,7 +105,7 @@ target_link_libraries(idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
                                 ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
                                 ${YARP_LIBRARIES} icubmod)
 
-install(TARGETS drc_shared planner_msgs idynutils
+install(TARGETS drc_shared planner_msgs idynutils drc_utils
   grabber_example module_state_streamer_example # examples, comment this if not needed
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -118,6 +126,14 @@ install(TARGETS drc_shared
         RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
         LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib
         PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/drc_shared" COMPONENT dev)
+
+install(TARGETS drc_utils
+        EXPORT drc_Utils
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib
+        PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/drc_utils" COMPONENT dev)
+
 
 install(TARGETS idynutils  
         EXPORT idynUtils  
