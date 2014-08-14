@@ -75,6 +75,7 @@ add_library(drc_shared SHARED
 )
 
 add_library(idynutils SHARED src/idynutils.cpp
+                             src/comanutils.cpp
                              src/cartesian_utils.cpp)
  
 add_library(planner_msgs
