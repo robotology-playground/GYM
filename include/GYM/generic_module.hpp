@@ -13,7 +13,8 @@ struct derived_constraint {
      * @param ps a pointer to a T.
      * @return void
      **/
-    static void constraints(T* ps) {
+    static void constraints(T* ps) 
+    {
         B* pb = ps; 
     }
     
@@ -21,7 +22,8 @@ struct derived_constraint {
      * @brief constraint trigger at compile time.
      *
      **/
-    derived_constraint() {
+    derived_constraint() 
+    {
         void(*fp)(T*) = constraints; 
     }
 };
@@ -41,6 +43,7 @@ protected:
     double module_period;
     double thread_period;
     walkman::drc::yarp_switch_interface* switch_interface;
+    yarp::os::ResourceFinder rf;
     bool isALive;
     
 public: 
@@ -50,10 +53,16 @@ public:
      * @param module_prefix module name.
      * @param module_period period of the module in second.
      * @param thread_period period of the run thread in millisecond.
+     * @param rf optional param : resource finder.
      **/
-    generic_module(std::string module_prefix, double module_period, double thread_period) : module_prefix(module_prefix),
-                                                                                            module_period(module_period),
-                                                                                            thread_period(thread_period) {
+    generic_module( std::string module_prefix, 
+                    double module_period, 
+                    double thread_period, 
+                    yarp::os::ResourceFinder *rf=NULL ) : module_prefix(module_prefix),
+                                                         module_period(module_period),
+                                                         thread_period(thread_period), 
+                                                         rf(*rf)
+    {
         // check that T is a RateThread subclass (at compile time)
         derived_constraint<T, yarp::os::RateThread>();
         switch_interface = new walkman::drc::yarp_switch_interface(module_prefix);
@@ -62,13 +71,15 @@ public:
     }
     
     /**
-     * @brief create a new custom thread and make it start
+     * @brief call configure, create a new custom thread and make it start 
      *
-     * @return true if the thread correctly starts. False othetwise.
+     * @return true if the thread correctly starts and the configure has success. False otherwise.
      **/
-    bool configure()
+    bool start()
     {
-        // create the thread 
+        //call configure
+        bool ret = configure( this->rf );
+        // create the thread TODO: if has flag startNow, start contol right away
         thread = new T(thread_period);
         // start the thread 
         if(!thread->start())
@@ -76,22 +87,36 @@ public:
             delete thread;
             return false;
         }
-	isALive = true;
-        return true;
+        isALive = true;
+        return ret;
+        
     }
 
     /**
-     * @brief stop and delete the thread.
+     * @brief call cutom_stop, stop and delete the thread.
      *
-     * @return always true.
+     * @return true if custom_stop has succes. False otherwise.
      **/
-    bool close() {
+    bool close() 
+    {
+        //call cutom_stop
+        bool ret = custom_close();
         // could happend that isAlive is false here -> close called in automatic after updateModule return false
         if(isALive){
             thread->stop();
             delete thread;
         } 
-	isALive = false;
+        isALive = false;
+        return ret;
+    }
+    
+    /**
+     * @brief cutom stop function: could be redefined in subclasses
+     *
+     * @return true on succes. False otherwise.
+     **/
+    virtual bool custom_close()
+    {
         return true;
     }
     
@@ -100,7 +125,8 @@ public:
      *
      * @return always true
      **/
-    virtual bool pause() {
+    bool pause() 
+    {
         thread->suspend();
         return true;
     }
@@ -110,31 +136,44 @@ public:
      *
      * @return always true
      **/
-    virtual bool resume() {
+    bool resume() 
+    {
         thread->resume();
         return true;
     }
     
     /**
-     * @brief check if the moduel is alive.
+     * @brief check if the module is alive.
      *
      * @return true if the module is alive. False otherwise.
      **/
-    bool isAlive() {
+    bool isAlive() 
+    {
         return isALive;
+    }
+    
+    /**
+     * @brief getter for the period of the thread.
+     *
+     * @return the period of the thread.
+     **/
+    double getThreadPeriod() 
+    {
+        return thread_period;
     }
     
     /**
      * @brief getter for the period of the module.
      *
-     * @return the module of the period.
+     * @return the period of the module.
      **/
-    virtual double getPeriod() {
+    double getPeriod() 
+    {
         return module_period;
     }
     
     /**
-     * @brief update module dunction, called every module_period as specified in the constructor.
+     * @brief update module function, called every module_period as specified in the constructor.
      * Gets the command from the switch interface and executes it.
      * 
      * Possible commands are: start, stop, pause, resume and quit.
@@ -142,7 +181,8 @@ public:
      *
      * @return false after a quit command. True otherwise.
      **/
-    virtual bool updateModule() {
+    bool updateModule() 
+    {
         std::string switch_command;
         // get the command
         if(switch_interface->getCommand(switch_command)) {
@@ -161,7 +201,7 @@ public:
                     this->close();
                 }
                 std::cout<<"Starting module"<<std::endl;       
-                if(this->configure()) {
+                if(this->start()) {
                     std::cout<<"Module is started"<<std::endl;
                 }
                 else {
