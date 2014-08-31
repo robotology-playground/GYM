@@ -188,4 +188,4 @@ SET(CartesianUtilsTestLibs idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIE
 ADD_EXECUTABLE(CartesianUtilsTest     src/tests/cartesian_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(CartesianUtilsTest ${CartesianUtilsTestLibs})
 add_dependencies(CartesianUtilsTest GTest-ext idynutils)
-add_test(cartesian_utils_tests CartesianUtils)
+add_test(cartesian_utils_tests CartesianUtilsTest)
