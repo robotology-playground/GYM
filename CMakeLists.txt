@@ -189,3 +189,12 @@ ADD_EXECUTABLE(CartesianUtilsTest     src/tests/cartesian_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(CartesianUtilsTest ${CartesianUtilsTestLibs})
 add_dependencies(CartesianUtilsTest GTest-ext idynutils)
 add_test(cartesian_utils_tests CartesianUtilsTest)
+
+SET(iDynUtilsTestLibs idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
+                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
+                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
+                                ${YARP_LIBRARIES} icubmod ${GTEST_BOTH_LIBRARIES})
+ADD_EXECUTABLE(iDynUtilsTest     src/tests/idyn_utils_tests.cpp)
+TARGET_LINK_LIBRARIES(iDynUtilsTest ${iDynUtilsTestLibs})
+add_dependencies(iDynUtilsTest GTest-ext idynutils)
+add_test(idyn_utils_tests iDynUtilsTest)
