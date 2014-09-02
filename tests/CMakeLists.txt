@@ -32,7 +32,7 @@ SET(interfacesTestLibs drc_shared ${YARP_LIBRARIES} ${ACE_LIBRARIES})
 ADD_EXECUTABLE(interfacesTest test_interfaces.cpp)
 TARGET_LINK_LIBRARIES(interfacesTest ${interfacesTestLibs})
 add_dependencies(interfacesTest GTest-ext drc_shared)
-add_test(test_drc_shared    ${TESTSDIR}/interfacesTest)
+#add_test(test_drc_shared    ${TESTSDIR}/interfacesTest)
 
 SET(CartesianUtilsTestLibs idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
                                 ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
