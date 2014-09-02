@@ -27,6 +27,11 @@ FIND_PACKAGE(moveit_core REQUIRED)
 FIND_PACKAGE(ICUB REQUIRED)
 
 enable_testing()
+
+#add_custom_target(  drc_shared_test ALL
+#                    COMMAND ${CMAKE_CTEST_COMMAND}
+#                    DEPENDS drc_utils idynutils drc_shared tests_utils)
+
 set(gTestSource "/usr/src/gtest")
 ExternalProject_Add(GTest-ext SOURCE_DIR ${gTestSource}
                               PREFIX "${CMAKE_CURRENT_BINARY_DIR}/external"
@@ -77,6 +82,8 @@ add_subdirectory(src/tests)
 ## Declare drc_utils library for utils containing exotic shared libraries
 add_library(drc_utils SHARED
     src/utils/convex_hull.cpp)
+
+add_library(tests_utils SHARED src/tests_utils.cpp)
 
 ## Declare drc_shared library
 add_library(drc_shared SHARED
@@ -190,7 +197,7 @@ TARGET_LINK_LIBRARIES(CartesianUtilsTest ${CartesianUtilsTestLibs})
 add_dependencies(CartesianUtilsTest GTest-ext idynutils)
 add_test(cartesian_utils_tests CartesianUtilsTest)
 
-SET(iDynUtilsTestLibs idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
+SET(iDynUtilsTestLibs tests_utils idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
                                 ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
                                 ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
                                 ${YARP_LIBRARIES} icubmod ${GTEST_BOTH_LIBRARIES})
@@ -198,3 +205,12 @@ ADD_EXECUTABLE(iDynUtilsTest     src/tests/idyn_utils_tests.cpp)
 TARGET_LINK_LIBRARIES(iDynUtilsTest ${iDynUtilsTestLibs})
 add_dependencies(iDynUtilsTest GTest-ext idynutils)
 add_test(idyn_utils_tests iDynUtilsTest)
+
+SET(testUtilsTestLibs tests_utils idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
+                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
+                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
+                                ${YARP_LIBRARIES} icubmod ${GTEST_BOTH_LIBRARIES})
+ADD_EXECUTABLE(testUtilsTest     src/tests/tests_utils_tests.cpp)
+TARGET_LINK_LIBRARIES(testUtilsTest ${testUtilsTestLibs})
+add_dependencies(testUtilsTest GTest-ext idynutils)
+add_test(tests_utils_tests testUtilsTest)
