@@ -26,20 +26,6 @@ FIND_PACKAGE(kdl_parser REQUIRED)
 FIND_PACKAGE(moveit_core REQUIRED)
 FIND_PACKAGE(ICUB REQUIRED)
 
-enable_testing()
-
-#add_custom_target(  drc_shared_test ALL
-#                    COMMAND ${CMAKE_CTEST_COMMAND}
-#                    DEPENDS drc_utils idynutils drc_shared tests_utils)
-
-set(gTestSource "/usr/src/gtest")
-ExternalProject_Add(GTest-ext SOURCE_DIR ${gTestSource}
-                              PREFIX "${CMAKE_CURRENT_BINARY_DIR}/external"
-                              INSTALL_COMMAND "")
-set(GTEST_LIB_DIRS "${CMAKE_CURRENT_BINARY_DIR}/external/src/GTest-ext-build/")
-set(GTEST_INCLUDE_DIRS ${gTestSource})
-set(GTEST_BOTH_LIBRARIES gtest gtest_main)
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -59,10 +45,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${GTEST_INCLUDE_DIRS}
 )
-
-link_directories(${GTEST_LIB_DIRS})
 
 # for every file in drc_INCLUDES CMake already sets the property HEADER_FILE_ONLY
 file(GLOB_RECURSE drc_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h)
@@ -77,7 +60,6 @@ find_package(YARP 2.3.60)
 include_directories(${YARP_INCLUDE_DIRS})
 
 add_subdirectory(src/MotorControlHelpers)
-add_subdirectory(src/tests)
 
 ## Declare drc_utils library for utils containing exotic shared libraries
 add_library(drc_utils SHARED
@@ -188,29 +170,4 @@ install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
 
 #TESTING
-SET(CartesianUtilsTestLibs idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
-                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
-                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
-                                ${YARP_LIBRARIES} icubmod ${GTEST_BOTH_LIBRARIES})
-ADD_EXECUTABLE(CartesianUtilsTest     src/tests/cartesian_utils_tests.cpp)
-TARGET_LINK_LIBRARIES(CartesianUtilsTest ${CartesianUtilsTestLibs})
-add_dependencies(CartesianUtilsTest GTest-ext idynutils)
-add_test(cartesian_utils_tests CartesianUtilsTest)
-
-SET(iDynUtilsTestLibs tests_utils idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
-                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
-                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
-                                ${YARP_LIBRARIES} icubmod ${GTEST_BOTH_LIBRARIES})
-ADD_EXECUTABLE(iDynUtilsTest     src/tests/idyn_utils_tests.cpp)
-TARGET_LINK_LIBRARIES(iDynUtilsTest ${iDynUtilsTestLibs})
-add_dependencies(iDynUtilsTest GTest-ext idynutils)
-add_test(idyn_utils_tests iDynUtilsTest)
-
-SET(testUtilsTestLibs tests_utils idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
-                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
-                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
-                                ${YARP_LIBRARIES} icubmod ${GTEST_BOTH_LIBRARIES})
-ADD_EXECUTABLE(testUtilsTest     src/tests/tests_utils_tests.cpp)
-TARGET_LINK_LIBRARIES(testUtilsTest ${testUtilsTestLibs})
-add_dependencies(testUtilsTest GTest-ext idynutils)
-add_test(tests_utils_tests testUtilsTest)
+add_subdirectory(src/tests)
