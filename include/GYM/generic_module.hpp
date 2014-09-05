@@ -1,4 +1,9 @@
+#ifndef GENERIC_MODULE_HPP
+#define GENERIC_MODULE_HPP
+
 #include <yarp/os/all.h>
+#include "generic_thread.hpp"
+#include <drc_shared/yarp_status_interface.h>
 #include <drc_shared/yarp_command_interface.hpp>
 
 /**
@@ -30,66 +35,209 @@ struct derived_constraint {
 
 
 /**
- * @brief generic module template with a switch interface and a custom rate thread. 
- * The template type T must be a subclass of a yarp::os::RateThread.
+ * @brief generic module template with a standard switch interface, a standard status interface and a generic thread. 
+ * The template type T must be a subclass of a generic_thread.
  * 
  * @author Luca Muratore (luca.muratore@iit.it)
  **/
 template<class T> 
 class generic_module: public yarp::os::RFModule {
-protected:
+private:
     T* thread;
+    bool alive;
     std::string module_prefix;
     double module_period;
     double thread_period;
+    std::string robot_name;
     walkman::drc::yarp_switch_interface* switch_interface;
-    yarp::os::ResourceFinder rf;
-    bool isALive;
+    walkman::drc::yarp_status_interface* status_interface;
+    int actual_num_seq;
     
-public: 
-    /**
-     * @brief constructor of the generic module.
-     *
-     * @param module_prefix module name.
-     * @param module_period period of the module in second.
-     * @param thread_period period of the run thread in millisecond.
-     * @param rf optional param : resource finder.
-     **/
-    generic_module( std::string module_prefix, 
-                    double module_period, 
-                    double thread_period, 
-                    yarp::os::ResourceFinder *rf=NULL ) : module_prefix(module_prefix),
-                                                         module_period(module_period),
-                                                         thread_period(thread_period), 
-                                                         rf(*rf)
+    
+     /**
+     * @brief getter for the standard config file name - module_prefix.ini -  used by the resource finder
+     * 
+     * @return the standard config file (.ini) name for the resource finder
+     */
+    std::string getStandardConfigFileName() 
     {
-        // check that T is a RateThread subclass (at compile time)
-        derived_constraint<T, yarp::os::RateThread>();
-        switch_interface = new walkman::drc::yarp_switch_interface(module_prefix);
-        // not alive
-        isALive = false;
+        return module_prefix + ".ini";
     }
     
     /**
-     * @brief call configure, create a new custom thread and make it start 
+     * @brief getter for the standard context name - module_prefix - used by the resource finder
+     * 
+     * @return the standard context name for the resource finder
+     */
+    std::string getStandardContextName() 
+    {
+        return module_prefix;
+    }
+    
+    /**
+     * @brief create a standard resource finder for the generic module
+     * 
+     * @return true if standard config file (.ini) file exists
+     */
+    bool create_standard_rf()
+    {
+        rf = new yarp::os::ResourceFinder();
+        rf->setVerbose(true);
+        rf->setDefaultConfigFile( getStandardConfigFileName().c_str() ); 
+        rf->setDefaultContext( getStandardContextName().c_str() );  
+        return rf->configure(argc, argv);
+    }
+    
+    /**
+     * @brief initializer for the mandatory params that are: 
+     *        - the thread period expressed in millisec.
+     *        - the robot name.
+     * 
+     * @return true if the initialization has success. False otherwise.
+     */
+    bool initializeMandatoryParam()
+    {
+        yarp::os::Value actual_find_value;
+        //thread period in millisec as an int
+        if( rf->check("dT") ) {
+            actual_find_value = rf->find("dT");
+            if ( actual_find_value.isInt() ) {
+                thread_period = actual_find_value.asInt();
+            }
+            else {
+                //thread period is not an int
+                return false;
+            }
+        }
+        else {
+            //robot name does not exist
+            return false;
+        }
+        
+        //robot name as a string
+        if( rf->check("robot") ) {
+            actual_find_value = rf->find("robot");
+            if ( actual_find_value.isString() ) {
+                robot_name = actual_find_value.asString();
+            }
+            else {
+                //robot name is not a string
+                return false;
+            }
+        }
+        else {
+            //robot name does not exist
+            return false;
+        }
+        
+        //intizializaions had success
+        return true;
+    }
+
+    
+    
+public: 
+    int argc;
+    char** argv;
+    yarp::os::ResourceFinder* rf;
+    
+    /**
+     * @brief constructor of the generic module. 
+     *        It creates a standard switch interface and a status interface for the module at /module_prefix/module/status:o
+     *
+     * @param argc: argc
+     * @param argv: argv
+     * @param module_prefix module name.
+     * @param module_period period of the module in milliseconds.
+     * @param rf optional param : resource finder.
+     **/
+    generic_module( int argc, 
+                    char* argv[],
+                    std::string module_prefix, 
+                    int module_period, 
+                    yarp::os::ResourceFinder *rf = NULL ) : argc( argc ),
+                                                            argv( argv ),
+                                                            module_prefix( module_prefix ),
+                                                            rf( rf )
+    {
+        // check that T is a generic_thread subclass (at compile time)
+        derived_constraint<T, generic_thread>();
+        // create the switch and the status interface and make it starts
+        switch_interface = new walkman::drc::yarp_switch_interface( module_prefix );
+        // status rate setted at the half of the module period
+        status_interface = new walkman::drc::yarp_status_interface( module_prefix + "/module" );
+        status_interface->setRate( module_period / 2 );
+        status_interface->start();
+        // not alive
+        alive = false;
+        // initialize actual sequence number
+        actual_num_seq = 0;
+        // set the module period in second for the RFModule
+        this->module_period = (double)module_period / 1000;
+    }
+    
+    /**
+     * @brief generic module standard configure: take the rf (custom or standard) and initialize the mandatory params. 
+     *        It calls the custom_configure() at the end of the function. 
+     * @param rf resource finder.
+     * 
+     * @return true if the rf (standard or custom) exists. False otherwise.
+     **/
+    bool configure( yarp::os::ResourceFinder &rf ) 
+    {
+        bool rf_ok = true;
+        // if there is not a custom rf, create the standard one
+        if( this->rf == NULL ) {
+           rf_ok = create_standard_rf();
+        }
+        // check the rf and the mandatory params initialization
+        if( rf_ok && initializeMandatoryParam() ) {
+            //call the custom configure
+            return custom_configure( rf );
+        }
+        else {
+            delete this->rf;
+            this->rf = NULL;
+            return false;
+        }
+
+        
+    }
+    
+    /**
+     * @brief cutom configure function: could be redefined in subclasses.
+     *
+     * @return true on succes. False otherwise.
+     **/
+    virtual bool custom_configure( yarp::os::ResourceFinder &rf )
+    {
+        return true;
+    }
+    
+    /**
+     * @brief call configure, create a new custom thread and make it start .
      *
      * @return true if the thread correctly starts and the configure has success. False otherwise.
      **/
     bool start()
     {
-        //call configure
-        bool ret = configure( this->rf );
-        // create the thread TODO: if has flag startNow, start contol right away
-        thread = new T(thread_period);
-        // start the thread 
-        if(!thread->start())
-        {
-            delete thread;
+        //call configure - if it has success create the thread and make it start
+        if( configure( *rf ) ) {
+            // create the thread 
+            thread = new T( module_prefix, thread_period, rf );
+            // start the thread 
+            if( !thread->start() )
+            {
+                delete thread;
+                return false;
+            }
+            alive = true;
+            return true;
+        }
+        // configure error
+        else {
             return false;
         }
-        isALive = true;
-        return ret;
-        
     }
 
     /**
@@ -100,14 +248,14 @@ public:
     bool close() 
     {
         //call cutom_stop
-        bool ret = custom_close();
+        bool custom_close_ret = custom_close();
         // could happend that isAlive is false here -> close called in automatic after updateModule return false
-        if(isALive){
+        if(alive){
             thread->stop();
             delete thread;
         } 
-        isALive = false;
-        return ret;
+        alive = false;
+        return custom_close_ret;
     }
     
     /**
@@ -149,7 +297,7 @@ public:
      **/
     bool isAlive() 
     {
-        return isALive;
+        return alive;
     }
     
     /**
@@ -163,13 +311,33 @@ public:
     }
     
     /**
+     * @brief getter for the name of the robot.
+     *
+     * @return the name of the robot.
+     **/
+    std::string getRobotName() 
+    {
+        return robot_name;
+    }
+    
+    /**
      * @brief getter for the period of the module.
      *
      * @return the period of the module.
      **/
-    double getPeriod() 
+    double getPeriod() final
     {
         return module_period;
+    }
+    
+    /**
+     * @brief getter for the prefix of the module.
+     *
+     * @return the prefix of the module.
+     **/
+    std::string getModulePrefix() 
+    {
+        return module_prefix;
     }
     
     /**
@@ -183,8 +351,11 @@ public:
      **/
     bool updateModule() 
     {
-        std::string switch_command;
+        // status update
+        status_interface->setStatus("Update Module", actual_num_seq);
+        actual_num_seq++;
         // get the command
+        std::string switch_command;
         if(switch_interface->getCommand(switch_command)) {
             std::cout<<"Switch Interface received: "<<switch_command<<std::endl;
             //stop command
@@ -225,15 +396,7 @@ public:
             // quit command
             else if(switch_command == "quit") {
                 std::cout<<"Quit"<<std::endl;
-                //stop the module
-                /*if(this->isAlive()){
-                    std::cout<<"Stopping thread"<<std::endl;
-                    this->close();
-                }*/
                 std::cout<<"Everything is closed"<<std::endl;
-                
-                //delete switch_interface;
-                // stop the module
                 return false;
             }
             else {
@@ -244,3 +407,5 @@ public:
     }
   
 };
+
+#endif
