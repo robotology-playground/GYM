@@ -39,7 +39,7 @@ include(YCMDefaultDirs)
 ycm_default_dirs(${VARS_PREFIX})
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES drc_shared planner_msgs idynutils drc_utils
+  LIBRARIES drc_shared planner_msgs idynutils drc_utils tests_utils
 )
 
 include_directories(
@@ -111,7 +111,7 @@ target_link_libraries(idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
                                 ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
                                 ${YARP_LIBRARIES} icubmod)
 
-install(TARGETS drc_shared planner_msgs idynutils drc_utils
+install(TARGETS drc_shared planner_msgs idynutils drc_utils tests_utils
   grabber_example module_state_streamer_example # examples, comment this if not needed
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -140,6 +140,12 @@ install(TARGETS drc_utils
         LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib
         PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/drc_utils" COMPONENT dev)
 
+install(TARGETS tests_utils
+        EXPORT tests_Utils
+        ARCHIVE DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT lib
+        RUNTIME DESTINATION "${${VARS_PREFIX}_INSTALL_BINDIR}" COMPONENT bin
+        LIBRARY DESTINATION "${${VARS_PREFIX}_INSTALL_LIBDIR}" COMPONENT shlib
+        PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/tests_utils" COMPONENT dev)
 
 install(TARGETS idynutils  
         EXPORT idynUtils  
@@ -148,7 +154,7 @@ install(TARGETS idynutils
         PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/idynutils" COMPONENT dev)
 
         
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared idynutils drc_utils)
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared idynutils drc_utils tests_utils)
 
 
 include(InstallBasicPackageFiles)
