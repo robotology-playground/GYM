@@ -2,6 +2,7 @@
 #define GENERIC_MODULE_HPP
 
 #include <yarp/os/all.h>
+#include <boost/concept_check.hpp>
 #include "generic_thread.hpp"
 #include <drc_shared/yarp_status_interface.h>
 #include <drc_shared/yarp_command_interface.hpp>
@@ -52,6 +53,8 @@ private:
     walkman::drc::yarp_switch_interface* switch_interface;
     walkman::drc::yarp_status_interface* status_interface;
     int actual_num_seq;
+    yarp::os::ResourceFinder* rf;
+    bool rf_ok;
     
     
      /**
@@ -81,11 +84,11 @@ private:
      */
     bool create_standard_rf()
     {
-        rf = new yarp::os::ResourceFinder();
-        rf->setVerbose(true);
-        rf->setDefaultConfigFile( getStandardConfigFileName().c_str() ); 
-        rf->setDefaultContext( getStandardContextName().c_str() );  
-        return rf->configure(argc, argv);
+        this->rf = new yarp::os::ResourceFinder();
+        this->rf->setVerbose(true);
+        this->rf->setDefaultConfigFile( getStandardConfigFileName().c_str() ); 
+        this->rf->setDefaultContext( getStandardContextName().c_str() );  
+        return this->rf->configure(argc, argv);
     }
     
     /**
@@ -110,7 +113,7 @@ private:
             }
         }
         else {
-            //robot name does not exist
+            //thread period does not exist
             return false;
         }
         
@@ -139,7 +142,6 @@ private:
 public: 
     int argc;
     char** argv;
-    yarp::os::ResourceFinder* rf;
     
     /**
      * @brief constructor of the generic module. 
@@ -149,16 +151,15 @@ public:
      * @param argv: argv
      * @param module_prefix module name.
      * @param module_period period of the module in milliseconds.
-     * @param rf optional param : resource finder.
+     * @param rf resource finder: optional param.
      **/
     generic_module( int argc, 
                     char* argv[],
                     std::string module_prefix, 
                     int module_period, 
-                    yarp::os::ResourceFinder *rf = NULL ) : argc( argc ),
+                    yarp::os::ResourceFinder* rf = NULL ) : argc( argc ),
                                                             argv( argv ),
-                                                            module_prefix( module_prefix ),
-                                                            rf( rf )
+                                                            module_prefix( module_prefix )
     {
         // check that T is a generic_thread subclass (at compile time)
         derived_constraint<T, generic_thread>();
@@ -174,6 +175,14 @@ public:
         actual_num_seq = 0;
         // set the module period in second for the RFModule
         this->module_period = (double)module_period / 1000;
+        // resource finder
+        if( rf == NULL ) {
+            rf_ok = create_standard_rf();
+        }
+        else {
+            this->rf = new yarp::os::ResourceFinder( *rf );
+            rf_ok = true;
+        }
     }
     
     /**
@@ -183,21 +192,14 @@ public:
      * 
      * @return true if the rf (standard or custom) exists. False otherwise.
      **/
-    bool configure( yarp::os::ResourceFinder &rf ) 
+    bool configure( yarp::os::ResourceFinder &rf ) final
     {
-        bool rf_ok = true;
-        // if there is not a custom rf, create the standard one
-        if( this->rf == NULL ) {
-           rf_ok = create_standard_rf();
-        }
         // check the rf and the mandatory params initialization
         if( rf_ok && initializeMandatoryParam() ) {
             //call the custom configure
-            return custom_configure( rf );
+            return custom_configure( *(this->rf) );
         }
         else {
-            delete this->rf;
-            this->rf = NULL;
             return false;
         }
 
@@ -229,6 +231,7 @@ public:
             if( !thread->start() )
             {
                 delete thread;
+                thread = NULL;
                 return false;
             }
             alive = true;
@@ -245,14 +248,20 @@ public:
      *
      * @return true if custom_stop has succes. False otherwise.
      **/
-    bool close() 
+    bool close() final
     {
         //call cutom_stop
         bool custom_close_ret = custom_close();
         // could happend that isAlive is false here -> close called in automatic after updateModule return false
-        if(alive){
-            thread->stop();
-            delete thread;
+        if( alive ){
+            try {
+                thread->stop();
+                delete thread;
+                thread = NULL;
+            } catch(std::bad_alloc& err) {
+                std::cerr  << err.what();
+            }
+
         } 
         alive = false;
         return custom_close_ret;
@@ -352,7 +361,7 @@ public:
     bool updateModule() 
     {
         // status update
-        status_interface->setStatus("Update Module", actual_num_seq);
+        status_interface->setStatus( std::to_string(actual_num_seq), actual_num_seq);
         actual_num_seq++;
         // get the command
         std::string switch_command;
@@ -396,7 +405,7 @@ public:
             // quit command
             else if(switch_command == "quit") {
                 std::cout<<"Quit"<<std::endl;
-                std::cout<<"Everything is closed"<<std::endl;
+                std::cout<<"Closing the module ... "<<std::endl;
                 return false;
             }
             else {
@@ -404,6 +413,21 @@ public:
             }
         }
         return true;
+    }
+    
+    virtual ~generic_module()
+    {
+        // delete switch interface
+        if ( switch_interface ) {
+            delete switch_interface;
+            switch_interface = NULL;
+        }
+        // delete status interface
+        if ( status_interface ) {
+            status_interface->stop();
+            delete status_interface;
+            status_interface = NULL;
+        }
     }
   
 };
