@@ -44,21 +44,27 @@ struct derived_constraint {
 template<class T> 
 class generic_module: public yarp::os::RFModule {
 private:
-    T* thread;
-    bool alive;
+    // generic module related variables
     std::string module_prefix;
     double module_period;
+    bool alive;
+    // thread controlled by the generic module
+    T* thread;
     double thread_period;
+    // name of the robot
     std::string robot_name;
+    // switch and status interface of the module
     walkman::drc::yarp_switch_interface* switch_interface;
     walkman::drc::yarp_status_interface* status_interface;
     int actual_num_seq;
+    // resource finder
     yarp::os::ResourceFinder* rf;
     bool rf_ok;
     
     
+    
      /**
-     * @brief getter for the standard config file name - module_prefix.ini -  used by the resource finder
+     * @brief getter for the standard config file name - module_prefix.ini - used by the resource finder
      * 
      * @return the standard config file (.ini) name for the resource finder
      */
@@ -80,7 +86,7 @@ private:
     /**
      * @brief create a standard resource finder for the generic module
      * 
-     * @return true if standard config file (.ini) file exists
+     * @return true if standard config file (.ini) file exists (WARNING: YARP return always true on the configure of the rf)
      */
     bool create_standard_rf()
     {
@@ -177,9 +183,11 @@ public:
         this->module_period = (double)module_period / 1000;
         // resource finder
         if( rf == NULL ) {
+            // standard rf 
             rf_ok = create_standard_rf();
         }
         else {
+            // copy of the custom rf passed to the constructor
             this->rf = new yarp::os::ResourceFinder( *rf );
             rf_ok = true;
         }
@@ -202,8 +210,6 @@ public:
         else {
             return false;
         }
-
-        
     }
     
     /**
@@ -229,7 +235,7 @@ public:
             thread = new T( module_prefix, thread_period, rf );
             // start the thread 
             if( !thread->start() )
-            {
+            {   // error starting the thread
                 delete thread;
                 thread = NULL;
                 return false;
@@ -261,7 +267,6 @@ public:
             } catch(std::bad_alloc& err) {
                 std::cerr  << err.what();
             }
-
         } 
         alive = false;
         return custom_close_ret;
@@ -278,7 +283,7 @@ public:
     }
     
     /**
-     * @brief pause the thread.
+     * @brief suspend the thread.
      *
      * @return always true
      **/
@@ -361,7 +366,7 @@ public:
     bool updateModule() 
     {
         // status update
-        status_interface->setStatus( std::to_string(actual_num_seq), actual_num_seq);
+        status_interface->setStatus( "Module alive at updateModule : #" + std::to_string(actual_num_seq), actual_num_seq);
         actual_num_seq++;
         // get the command
         std::string switch_command;
