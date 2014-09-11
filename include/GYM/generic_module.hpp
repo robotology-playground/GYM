@@ -58,45 +58,8 @@ private:
     walkman::drc::yarp_status_interface* status_interface;
     int actual_num_seq;
     // resource finder
-    yarp::os::ResourceFinder* rf;
-    bool rf_ok;
-    
-    
-    
-     /**
-     * @brief getter for the standard config file name - module_prefix.ini - used by the resource finder
-     * 
-     * @return the standard config file (.ini) name for the resource finder
-     */
-    std::string getStandardConfigFileName() 
-    {
-        return module_prefix + ".ini";
-    }
-    
-    /**
-     * @brief getter for the standard context name - module_prefix - used by the resource finder
-     * 
-     * @return the standard context name for the resource finder
-     */
-    std::string getStandardContextName() 
-    {
-        return module_prefix;
-    }
-    
-    /**
-     * @brief create a standard resource finder for the generic module
-     * 
-     * @return true if standard config file (.ini) file exists (WARNING: YARP return always true on the configure of the rf)
-     */
-    bool create_standard_rf()
-    {
-        this->rf = new yarp::os::ResourceFinder();
-        this->rf->setVerbose(true);
-        this->rf->setDefaultConfigFile( getStandardConfigFileName().c_str() ); 
-        this->rf->setDefaultContext( getStandardContextName().c_str() );  
-        return this->rf->configure(argc, argv);
-    }
-    
+    yarp::os::ResourceFinder rf;
+
     /**
      * @brief initializer for the mandatory params that are: 
      *        - the thread period expressed in millisec.
@@ -108,8 +71,8 @@ private:
     {
         yarp::os::Value actual_find_value;
         //thread period in millisec as an int
-        if( rf->check("dT") ) {
-            actual_find_value = rf->find("dT");
+        if( rf.check("dT") ) {
+            actual_find_value = rf.find("dT");
             if ( actual_find_value.isInt() ) {
                 thread_period = actual_find_value.asInt();
             }
@@ -124,8 +87,8 @@ private:
         }
         
         //robot name as a string
-        if( rf->check("robot") ) {
-            actual_find_value = rf->find("robot");
+        if( rf.check("robot") ) {
+            actual_find_value = rf.find("robot");
             if ( actual_find_value.isString() ) {
                 robot_name = actual_find_value.asString();
             }
@@ -163,9 +126,10 @@ public:
                     char* argv[],
                     std::string module_prefix, 
                     int module_period, 
-                    yarp::os::ResourceFinder* rf = NULL ) : argc( argc ),
-                                                            argv( argv ),
-                                                            module_prefix( module_prefix )
+                    yarp::os::ResourceFinder rf) :  argc( argc ),
+                                                    argv( argv ),
+                                                    module_prefix( module_prefix ),
+                                                    rf( rf )
     {
         // check that T is a generic_thread subclass (at compile time)
         derived_constraint<T, generic_thread>();
@@ -181,16 +145,6 @@ public:
         actual_num_seq = 0;
         // set the module period in second for the RFModule
         this->module_period = (double)module_period / 1000;
-        // resource finder
-        if( rf == NULL ) {
-            // standard rf 
-            rf_ok = create_standard_rf();
-        }
-        else {
-            // copy of the custom rf passed to the constructor
-            this->rf = new yarp::os::ResourceFinder( *rf );
-            rf_ok = true;
-        }
     }
     
     /**
@@ -203,9 +157,9 @@ public:
     bool configure( yarp::os::ResourceFinder &rf ) final
     {
         // check the rf and the mandatory params initialization
-        if( rf_ok && initializeMandatoryParam() ) {
+        if( initializeMandatoryParam() ) {
             //call the custom configure
-            return custom_configure( *(this->rf) );
+            return custom_configure( rf );
         }
         else {
             return false;
@@ -230,7 +184,7 @@ public:
     bool start()
     {
         //call configure - if it has success create the thread and make it start
-        if( configure( *rf ) ) {
+        if( configure( rf ) ) {
             // create the thread 
             thread = new T( module_prefix, thread_period, rf );
             // start the thread 
@@ -258,15 +212,11 @@ public:
     {
         //call cutom_stop
         bool custom_close_ret = custom_close();
-        // could happend that isAlive is false here -> close called in automatic after updateModule return false
+        // could happend that alive is false here -> close called in automatic after updateModule return false
         if( alive ){
-            try {
-                thread->stop();
-                delete thread;
-                thread = NULL;
-            } catch(std::bad_alloc& err) {
-                std::cerr  << err.what();
-            }
+            thread->stop();
+            delete thread;
+            thread = NULL;
         } 
         alive = false;
         return custom_close_ret;

@@ -16,7 +16,7 @@ protected:
     std::string module_prefix;
     double dT;
     std::string robot;
-    yarp::os::ResourceFinder* rf;
+    yarp::os::ResourceFinder rf;
 
 public: 
     
@@ -29,14 +29,13 @@ public:
      **/
     generic_thread( std::string module_prefix, 
                     double thread_period,
-                    yarp::os::ResourceFinder* rf) : module_prefix( module_prefix),
+                    yarp::os::ResourceFinder rf) : module_prefix( module_prefix),
                                                    dT( thread_period ),
+                                                   rf( rf ),
                                                    RateThread( thread_period )
     {    
-        // rf
-        this->rf = new yarp::os::ResourceFinder( *rf );
-        dT = rf->find("dT").asInt();
-        robot = rf->find("robot").asString();
+        dT = rf.find("dT").asInt();
+        robot = rf.find("robot").asString();
         std::cout << "Thread Period : " << dT << std::endl; 
         std::cout << "Robot Name : " << robot << std::endl; 
     }
@@ -51,11 +50,6 @@ public:
     
     void threadRelease() final 
     { 
-        // resource finder
-        if( rf ) {   
-            delete rf;
-            rf = NULL;
-        }
         // custom release
         custom_release();
     }
