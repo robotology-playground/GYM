@@ -1,11 +1,28 @@
 #ifndef GENERIC_MODULE_HPP
 #define GENERIC_MODULE_HPP
 
+// YARP
 #include <yarp/os/all.h>
-#include <boost/concept_check.hpp>
-#include "generic_thread.hpp"
+// status interface
 #include <drc_shared/yarp_status_interface.h>
+// command interface
 #include <drc_shared/yarp_command_interface.hpp>
+// param helper
+#include <paramHelp/paramHelperServer.h>
+#include <paramHelp/paramProxyBasic.h>
+#include <paramHelp/paramProxyInterface.h>
+//generic thread
+#include "generic_thread.hpp"
+
+// param helper define for params
+#define PARAM_ID_DT 0
+#define PARAM_ID_ROBOT 1
+#define PARAM_SIZE_DT 1
+#define PARAM_SIZE_ROBOT 1
+
+// param helper define for commands
+#define COMMAND_ID_HELP 0
+#define COMMAND_ID_SAVE_PARAMS 1
 
 /**
  * @brief auxiliary struct to specify a constraint between T and B.
@@ -42,7 +59,9 @@ struct derived_constraint {
  * @author Luca Muratore (luca.muratore@iit.it)
  **/
 template<class T> 
-class generic_module: public yarp::os::RFModule {
+class generic_module :  public yarp::os::RFModule,
+                        public paramHelp::ParamValueObserver,
+                        public paramHelp::CommandObserver {
 private:
     // generic module related variables
     std::string module_prefix;
@@ -59,6 +78,93 @@ private:
     int actual_num_seq;
     // resource finder
     yarp::os::ResourceFinder rf;
+    // param helper
+    paramHelp::ParamHelperServer* ph;
+    yarp::os::Port rpc_port;
+    std::vector<paramHelp::ParamProxyInterface *> actual_ph_parameters;
+    std::vector<paramHelp::CommandDescription> actual_ph_commands;
+    
+    
+    std::vector<paramHelp::ParamProxyInterface *> create_standard_ph_parameters()
+    {
+        std::vector<paramHelp::ParamProxyInterface *> standard_ph_parameters;
+        // insert dT param
+        standard_ph_parameters.push_back( new paramHelp::ParamProxyBasic<double>(   "thread_period", 
+                                                                                    PARAM_ID_DT, 
+                                                                                    PARAM_SIZE_DT, 
+                                                                                    paramHelp::ParamLowerBound<double>(1e-3), 
+                                                                                    paramHelp::PARAM_CONFIG, 
+                                                                                    NULL, 
+                                                                                    "control thread period [milliseconds]" ) );
+        
+        // insert robot name param
+        standard_ph_parameters.push_back( new paramHelp::ParamProxyBasic<std::string>(  "robot_name", 
+                                                                                        PARAM_ID_ROBOT, 
+                                                                                        PARAM_SIZE_ROBOT,  
+                                                                                        paramHelp::PARAM_CONFIG, 
+                                                                                        NULL, 
+                                                                                        "robot name" ) );
+        
+        return standard_ph_parameters;
+    }
+    
+    std::vector<paramHelp::CommandDescription> create_standard_ph_commands()
+    {
+        std::vector<paramHelp::CommandDescription> standard_ph_commands;
+        // insert help command
+        standard_ph_commands.push_back(paramHelp::CommandDescription(   "help",
+                                                                        COMMAND_ID_HELP,
+                                                                        "Get instructions about how to communicate with this module") );
+        // insert saveParams command
+        standard_ph_commands.push_back(paramHelp::CommandDescription(   "saveParams",
+                                                                        COMMAND_ID_SAVE_PARAMS,
+                                                                        "saveParams(string fileName) # Save the actual configuration parameters to file, inside the sot context folder") );
+        return standard_ph_commands;
+    }
+    
+    std::vector<paramHelp::ParamProxyInterface *> get_ph_parameters()
+    {
+        // standard params
+        std::vector<paramHelp::ParamProxyInterface *> ph_parameters = std::vector<paramHelp::ParamProxyInterface *>( create_standard_ph_parameters() );
+        // custom params
+        std::vector<paramHelp::ParamProxyInterface *> custom_ph_parameters = std::vector<paramHelp::ParamProxyInterface *>( custom_get_ph_parameters() );
+        // concat the two vectors
+        ph_parameters.insert(ph_parameters.end(), custom_ph_parameters.begin(), custom_ph_parameters.end() );
+    
+        return ph_parameters;
+    }
+    
+    std::vector<paramHelp::CommandDescription> get_ph_commands()
+    {
+        // standard params
+        std::vector<paramHelp::CommandDescription> ph_commands = std::vector<paramHelp::CommandDescription>( create_standard_ph_commands() );
+        // custom params
+        std::vector<paramHelp::CommandDescription> custom_ph_commands = std::vector<paramHelp::CommandDescription>( custom_get_ph_commands() );
+        // concat the two vectors
+        ph_commands.insert(ph_commands.end(), custom_ph_commands.begin(), custom_ph_commands.end() );
+        
+        return ph_commands;
+    }
+    
+     void ph_link_parameters() 
+    {
+        ph->linkParam(PARAM_ID_DT, &thread_period);
+        ph->linkParam(PARAM_ID_ROBOT, &robot_name);
+        custom_ph_link_parameters();
+    }
+    
+    void ph_register_commands() 
+    {
+        YARP_ASSERT(ph->registerCommandCallback(COMMAND_ID_HELP,           this));
+        YARP_ASSERT(ph->registerCommandCallback(COMMAND_ID_SAVE_PARAMS,    this));
+        custom_ph_register_commands();
+    }
+    
+    
+    
+    
+    
+    
 
     /**
      * @brief initializer for the mandatory params that are: 
@@ -71,8 +177,8 @@ private:
     {
         yarp::os::Value actual_find_value;
         //thread period in millisec as an int
-        if( rf.check("dT") ) {
-            actual_find_value = rf.find("dT");
+        if( rf.check("thread_period") ) {
+            actual_find_value = rf.find("thread_period");
             if ( actual_find_value.isInt() ) {
                 thread_period = actual_find_value.asInt();
             }
@@ -87,8 +193,8 @@ private:
         }
         
         //robot name as a string
-        if( rf.check("robot") ) {
-            actual_find_value = rf.find("robot");
+        if( rf.check("robot_name") ) {
+            actual_find_value = rf.find("robot_name");
             if ( actual_find_value.isString() ) {
                 robot_name = actual_find_value.asString();
             }
@@ -145,21 +251,155 @@ public:
         actual_num_seq = 0;
         // set the module period in second for the RFModule
         this->module_period = (double)module_period / 1000;
+
+
     }
+    
+    virtual std::vector<paramHelp::ParamProxyInterface *> custom_get_ph_parameters()
+    {
+        std::vector<paramHelp::ParamProxyInterface *> empty_vector;
+        return empty_vector;
+    }
+    
+    virtual std::vector<paramHelp::CommandDescription> custom_get_ph_commands()
+    {
+        std::vector<paramHelp::CommandDescription> empty_vector;
+        return empty_vector;
+    }
+    
+    virtual void custom_ph_link_parameters() 
+    {
+    }
+    
+     virtual void custom_ph_register_commands() 
+    {
+    }
+    
+    virtual bool respond(const yarp::os::Bottle& command,
+                         yarp::os::Bottle& reply)
+    {
+        std::cout << "cmd : " << command.toString() << std::endl;
+        bool respond_ok = true;
+        ph->lock();
+        if( !ph->processRpcCommand( command, reply ) ) {
+            reply.addString( ( std::string( "Command " ) + command.toString().c_str() + " not recognized." ).c_str() );
+            respond_ok = false;
+        }
+        ph->unlock();
+        
+         // if reply is empty put something into it, otherwise the rpc communication gets stuck
+        if( reply.size() == 0 )
+            reply.addString( ( std::string( "Command " ) + command.toString().c_str()+" received." ).c_str() );
+        return respond_ok;
+    }
+    
+    virtual void parameterUpdated(const paramHelp::ParamProxyInterface *pd)
+    {
+        return;
+    }
+
+
+    virtual void commandReceived(const paramHelp::CommandDescription &cd, const yarp::os::Bottle &params, yarp::os::Bottle &reply)
+    {
+        switch(cd.id)
+        {
+        case COMMAND_ID_HELP:
+            ph->getHelpMessage(reply);
+            break;
+        case COMMAND_ID_SAVE_PARAMS:
+            {
+                /*std::string fileName = rf->find( "from" ).asString();
+                
+                std::string folderName = rf.getContextPath() + "/";
+                std::string confPath = folderName + fileName;
+                std::vector<int> configIds;
+                for(unsigned int i = 0; i < PARAM_ID_SIZE; ++i)
+                    if( sot_VelKinCon_ParamDescr[i]->ioType.value == paramHelp::PARAM_IN_OUT ||
+                        sot_VelKinCon_ParamDescr[i]->ioType.value == paramHelp::PARAM_INPUT  ||
+                        sot_VelKinCon_ParamDescr[i]->ioType.value == paramHelp::PARAM_CONFIG )
+                        configIds.push_back(i);
+
+                std::cout << "Saving to " << confPath;
+
+                std::stringstream ss;
+                boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+                boost::posix_time::time_facet* output_facet = new boost::posix_time::time_facet("%Y%m%dT%H%M%S%F%q");
+                ss.imbue(std::locale(ss.getloc(), output_facet));
+                ss << pt;
+                std::string confPathWithTimestamp = confPath + "." + ss.str();
+
+                std::cout << " and " << confPathWithTimestamp;
+                reply.addString("saving...");
+
+                if( ph->writeParamsOnFile( confPathWithTimestamp,
+                                                    configIds.data(),
+                                                    configIds.size())) {
+                    if(boost::filesystem::exists(confPath))
+                            boost::filesystem::remove(confPath);
+                    ph->writeParamsOnFile( confPath,
+                                                    configIds.data(),
+                                                    configIds.size());
+                    reply.addString("ok");
+                } else
+                    reply.addString("failed!");*/
+            }
+            break;
+        }
+    }
+    
+    
     
     /**
      * @brief generic module standard configure: take the rf (custom or standard) and initialize the mandatory params. 
      *        It calls the custom_configure() at the end of the function. 
      * @param rf resource finder.
      * 
-     * @return true if the rf (standard or custom) exists. False otherwise.
+     * @return true if the rf (standard or custom) exists and the param helper is initialized with success. False otherwise.
      **/
     bool configure( yarp::os::ResourceFinder &rf ) final
     {
+        // set the name of the module
+        setName( module_prefix.c_str() );
+        
+        
+
+        // get the data for the param heleper using copy constructor to avoid problems on delete
+        actual_ph_parameters = std::vector<paramHelp::ParamProxyInterface *>( get_ph_parameters() );
+        actual_ph_commands = std::vector<paramHelp::CommandDescription>( get_ph_commands() );
+        // switch to standard c const vector
+        const paramHelp::ParamProxyInterface * const* ph_parameters =  &actual_ph_parameters[0];
+        const paramHelp::CommandDescription* ph_commands =  &actual_ph_commands[0];
+        // create the param helper
+        ph = new paramHelp::ParamHelperServer(  ph_parameters, actual_ph_parameters.size(),
+                                                ph_commands , actual_ph_commands.size() );
+        // link parameters
+        ph_link_parameters();
+        // register commands
+        ph_register_commands();
+        
+        
+        
+        
         // check the rf and the mandatory params initialization
         if( initializeMandatoryParam() ) {
-            //call the custom configure
-            return custom_configure( rf );
+            // param helper param init
+            yarp::os::Bottle init_msg;
+            ph->initializeParams( rf, init_msg );
+            paramHelp::printBottle( init_msg );
+            // attach to the module the rpc port for the param helper
+            attach( rpc_port );
+            // open the rpc port for the param helper
+            rpc_port.open( "/"+ module_prefix +"/rpc" );
+            // call the init on the param helper
+            if( ph->init( module_prefix ) ) {
+                //call the custom configure
+                return custom_configure( rf );
+            }
+            else {
+                // error on the param helper initialization
+                std::cout << "Error while initializing parameter helper." << std::endl;
+                return false;
+            }
         }
         else {
             return false;
@@ -210,8 +450,14 @@ public:
      **/
     bool close() final
     {
-        //call cutom_stop
+        //call cutom_close
         bool custom_close_ret = custom_close();
+        //delete param helper
+        if( ph ) {
+            ph->close();
+            delete ph;
+            ph = NULL;
+        }
         // could happend that alive is false here -> close called in automatic after updateModule return false
         if( alive ){
             thread->stop();
