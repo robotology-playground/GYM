@@ -1,8 +1,12 @@
 #ifndef GENERIC_THREAD_HPP
 #define GENERIC_THREAD_HPP
 
+// YARP
 #include <yarp/os/all.h>
-
+// param helper
+#include <paramHelp/paramHelperServer.h>
+// C++11 smart pointers
+#include <memory>
 
 /**
  * @brief generic thread
@@ -15,8 +19,10 @@ protected:
     
     std::string module_prefix;
     double thread_period;
-    std::string robot;
+    std::string robot_name;
     yarp::os::ResourceFinder rf;
+    std::shared_ptr<paramHelp::ParamHelperServer> ph;
+    
 
 public: 
     
@@ -28,16 +34,16 @@ public:
      * @param rf resource finder.
      **/
     generic_thread( std::string module_prefix, 
-                    double thread_period,
-                    yarp::os::ResourceFinder rf) : module_prefix( module_prefix),
-                                                   thread_period( thread_period ),
-                                                   rf( rf ),
-                                                   RateThread( thread_period )
+                    yarp::os::ResourceFinder rf, 
+                    std::shared_ptr<paramHelp::ParamHelperServer> ph  ):    module_prefix( module_prefix ),
+                                                                            thread_period( rf.find("thread_period").asInt() ),
+                                                                            robot_name( rf.find("robot_name").asString() ),
+                                                                            rf( rf ),
+                                                                            ph( ph ),
+                                                                            RateThread( thread_period )
     {    
-        thread_period = rf.find("thread_period").asInt();
-        robot = rf.find("robot").asString();
         std::cout << "Thread Period : " << thread_period << std::endl; 
-        std::cout << "Robot Name : " << robot << std::endl; 
+        std::cout << "Robot Name : " << robot_name << std::endl; 
     }
     
     
@@ -75,8 +81,6 @@ public:
     virtual void custom_release() 
     {
     }
-    
-     
   
 };
 

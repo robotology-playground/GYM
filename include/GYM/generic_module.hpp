@@ -11,6 +11,8 @@
 #include <paramHelp/paramHelperServer.h>
 #include <paramHelp/paramProxyBasic.h>
 #include <paramHelp/paramProxyInterface.h>
+// C++11 smart pointers
+#include <memory>
 //generic thread
 #include "generic_thread.hpp"
 
@@ -73,29 +75,36 @@ private:
     // name of the robot
     std::string robot_name;
     // switch and status interface of the module
-    walkman::drc::yarp_switch_interface* switch_interface;
-    walkman::drc::yarp_status_interface* status_interface;
+    std::shared_ptr<walkman::drc::yarp_switch_interface> switch_interface;
+    std::shared_ptr<walkman::drc::yarp_status_interface> status_interface;
     int actual_num_seq;
     // resource finder
-    yarp::os::ResourceFinder rf;
+    yarp::os::ResourceFinder rf;  
     // param helper
-    paramHelp::ParamHelperServer* ph;
+    std::shared_ptr<paramHelp::ParamHelperServer> ph;
     yarp::os::Port rpc_port;
     std::vector<paramHelp::ParamProxyInterface *> actual_ph_parameters;
     std::vector<paramHelp::CommandDescription> actual_ph_commands;
     
     
+    /**
+     * @brief create the standard parameters for the param helper:
+     *            - thread_period : an int that represents the period of the controlled thread in millisec
+     *            - robot_name : a string that represents the name of the robot
+     * 
+     * @return a std::vector with the ParamProxyInterface* of the standard parameters
+     */
     std::vector<paramHelp::ParamProxyInterface *> create_standard_ph_parameters()
     {
         std::vector<paramHelp::ParamProxyInterface *> standard_ph_parameters;
-        // insert dT param
-        standard_ph_parameters.push_back( new paramHelp::ParamProxyBasic<double>(   "thread_period", 
-                                                                                    PARAM_ID_DT, 
-                                                                                    PARAM_SIZE_DT, 
-                                                                                    paramHelp::ParamLowerBound<double>(1e-3), 
-                                                                                    paramHelp::PARAM_CONFIG, 
-                                                                                    NULL, 
-                                                                                    "control thread period [milliseconds]" ) );
+        // insert thread_period param
+        standard_ph_parameters.push_back( new paramHelp::ParamProxyBasic<int>(  "thread_period", 
+                                                                                PARAM_ID_DT, 
+                                                                                PARAM_SIZE_DT, 
+                                                                                paramHelp::ParamLowerBound<int>(1), 
+                                                                                paramHelp::PARAM_CONFIG, 
+                                                                                NULL, 
+                                                                                "control thread period [milliseconds]" ) );
         
         // insert robot name param
         standard_ph_parameters.push_back( new paramHelp::ParamProxyBasic<std::string>(  "robot_name", 
@@ -104,10 +113,16 @@ private:
                                                                                         paramHelp::PARAM_CONFIG, 
                                                                                         NULL, 
                                                                                         "robot name" ) );
-        
         return standard_ph_parameters;
     }
     
+    /**
+     * @brief create the standard commands for the param helper:
+     *            - help : get instructions about how to communicate with this module
+     *            - save_params <file_name>:  Save the actual configuration parameters to file, inside the resource finder context folder
+     * 
+     * @return a std::vector with the CommandDescription objects the standard parameters
+     */
     std::vector<paramHelp::CommandDescription> create_standard_ph_commands()
     {
         std::vector<paramHelp::CommandDescription> standard_ph_commands;
@@ -115,61 +130,71 @@ private:
         standard_ph_commands.push_back(paramHelp::CommandDescription(   "help",
                                                                         COMMAND_ID_HELP,
                                                                         "Get instructions about how to communicate with this module") );
-        // insert saveParams command
-        standard_ph_commands.push_back(paramHelp::CommandDescription(   "saveParams",
+        // insert save_params command
+        standard_ph_commands.push_back(paramHelp::CommandDescription(   "save_params",
                                                                         COMMAND_ID_SAVE_PARAMS,
-                                                                        "saveParams(string fileName) # Save the actual configuration parameters to file, inside the sot context folder") );
+                                                                        "save_params <file_name>: Save the actual configuration parameters to file, inside the resource finder context folder") );
         return standard_ph_commands;
     }
     
+    /**
+     * @brief get the parameters for the param helper: standard parameters + custom(user defined) parameters calling custom_get_ph_commands()
+     * 
+     * @return a std::vector the ParamProxyInterface* of all the parameters: standard + custom 
+     */
     std::vector<paramHelp::ParamProxyInterface *> get_ph_parameters()
     {
         // standard params
-        std::vector<paramHelp::ParamProxyInterface *> ph_parameters = std::vector<paramHelp::ParamProxyInterface *>( create_standard_ph_parameters() );
+        std::vector<paramHelp::ParamProxyInterface *> ph_parameters( create_standard_ph_parameters() );
         // custom params
-        std::vector<paramHelp::ParamProxyInterface *> custom_ph_parameters = std::vector<paramHelp::ParamProxyInterface *>( custom_get_ph_parameters() );
+        std::vector<paramHelp::ParamProxyInterface *> custom_ph_parameters( custom_get_ph_parameters() );
         // concat the two vectors
-        ph_parameters.insert(ph_parameters.end(), custom_ph_parameters.begin(), custom_ph_parameters.end() );
+        ph_parameters.insert( ph_parameters.end(), custom_ph_parameters.begin(), custom_ph_parameters.end() );
     
         return ph_parameters;
     }
     
+    /**
+     * @brief get the commands for the param helper: standard commands + custom(user defined) commands calling custom_get_ph_commands()
+     * 
+     * @return a std::vector the CommandDescription objects of all the commands: standard + custom 
+     */
     std::vector<paramHelp::CommandDescription> get_ph_commands()
     {
         // standard params
-        std::vector<paramHelp::CommandDescription> ph_commands = std::vector<paramHelp::CommandDescription>( create_standard_ph_commands() );
+        std::vector<paramHelp::CommandDescription> ph_commands( create_standard_ph_commands() );
         // custom params
-        std::vector<paramHelp::CommandDescription> custom_ph_commands = std::vector<paramHelp::CommandDescription>( custom_get_ph_commands() );
+        std::vector<paramHelp::CommandDescription> custom_ph_commands( custom_get_ph_commands() );
         // concat the two vectors
         ph_commands.insert(ph_commands.end(), custom_ph_commands.begin(), custom_ph_commands.end() );
         
         return ph_commands;
     }
     
-     void ph_link_parameters() 
+    /**
+     * @brief link the standard parameters to the generic module and call custom_ph_link_parameters() for custom link params for the module
+     */ 
+    void ph_link_parameters() 
     {
         ph->linkParam(PARAM_ID_DT, &thread_period);
         ph->linkParam(PARAM_ID_ROBOT, &robot_name);
         custom_ph_link_parameters();
     }
     
+    /**
+     * @brief register the standard commands and call custom_ph_register_commands() for custom commands registration
+     */ 
     void ph_register_commands() 
     {
         YARP_ASSERT(ph->registerCommandCallback(COMMAND_ID_HELP,           this));
         YARP_ASSERT(ph->registerCommandCallback(COMMAND_ID_SAVE_PARAMS,    this));
         custom_ph_register_commands();
     }
-    
-    
-    
-    
-    
-    
 
     /**
      * @brief initializer for the mandatory params that are: 
-     *        - the thread period expressed in millisec.
-     *        - the robot name.
+     *        - the thread period expressed in millisec (int).
+     *        - the robot name (std::string).
      * 
      * @return true if the initialization has success. False otherwise.
      */
@@ -212,143 +237,200 @@ private:
         return true;
     }
 
+    /**
+     * @brief utility function for checking a suffix in a std::string - TODO: to move outside this class
+     * 
+     * @return true if str ends with the specified suffix
+     */
+    bool has_suffix(const std::string &str, const std::string &suffix)
+    {
+        return  str.size() >= suffix.size() &&
+                str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+    }
     
-    
-public: 
+public:
+    // command line args
     int argc;
     char** argv;
     
     /**
      * @brief constructor of the generic module. 
-     *        It creates a standard switch interface and a status interface for the module at /module_prefix/module/status:o
+     *        It creates a standard switch interface at /module_prefix/switch:i and a status interface for the module at /module_prefix/module/status:o
      *
      * @param argc: argc
      * @param argv: argv
-     * @param module_prefix module name.
-     * @param module_period period of the module in milliseconds.
-     * @param rf resource finder: optional param.
+     * @param module_prefix module name
+     * @param module_period period of the module in milliseconds
+     * @param rf resource finder
      **/
     generic_module( int argc, 
                     char* argv[],
                     std::string module_prefix, 
                     int module_period, 
-                    yarp::os::ResourceFinder rf) :  argc( argc ),
+                    yarp::os::ResourceFinder rf ) : argc( argc ),
                                                     argv( argv ),
                                                     module_prefix( module_prefix ),
-                                                    rf( rf )
+                                                    module_period( static_cast<double>(module_period) / 1000 ),
+                                                    rf( rf ),
+                                                    alive( false ),
+                                                    actual_num_seq( 0 ),
+                                                    switch_interface( std::make_shared<walkman::drc::yarp_switch_interface>( module_prefix ) ),
+                                                    status_interface( std::make_shared<walkman::drc::yarp_status_interface>( module_prefix + "/module" ) )
+
     {
         // check that T is a generic_thread subclass (at compile time)
         derived_constraint<T, generic_thread>();
-        // create the switch and the status interface and make it starts
-        switch_interface = new walkman::drc::yarp_switch_interface( module_prefix );
         // status rate setted at the half of the module period
-        status_interface = new walkman::drc::yarp_status_interface( module_prefix + "/module" );
         status_interface->setRate( module_period / 2 );
         status_interface->start();
-        // not alive
-        alive = false;
-        // initialize actual sequence number
-        actual_num_seq = 0;
-        // set the module period in second for the RFModule
-        this->module_period = (double)module_period / 1000;
-
-
     }
     
+    /**
+     * @brief cutom get parameters for param helper: could be redefined in subclasses
+     * 
+     * @return an empty std::vector if not redefined
+     */
     virtual std::vector<paramHelp::ParamProxyInterface *> custom_get_ph_parameters()
     {
         std::vector<paramHelp::ParamProxyInterface *> empty_vector;
         return empty_vector;
     }
     
+    /**
+     * @brief cutom get commands for param helper: could be redefined in subclasses
+     * 
+     * @return an empty std::vector if not redefined
+     */
     virtual std::vector<paramHelp::CommandDescription> custom_get_ph_commands()
     {
         std::vector<paramHelp::CommandDescription> empty_vector;
         return empty_vector;
     }
     
+    /**
+     * @brief custom link parameters for param helper function: should be redefined if custom parameters are present
+     */
     virtual void custom_ph_link_parameters() 
     {
     }
     
+    /**
+     * @brief custom register command for param helper function: should be redefined if custom commands are present
+     */
      virtual void custom_ph_register_commands() 
     {
     }
     
-    virtual bool respond(const yarp::os::Bottle& command,
-                         yarp::os::Bottle& reply)
+    /**
+     * @brief respond to the rpc port attached to the generic module
+     * 
+     * @param command command received
+     * @param reply reply of the module
+     * @return true on rpc process success, false otherwise
+     */
+    virtual bool respond(const yarp::os::Bottle& command,  yarp::os::Bottle& reply) final
     {
         std::cout << "cmd : " << command.toString() << std::endl;
         bool respond_ok = true;
+        
+        // ph locked
         ph->lock();
+        // try to process the command received
         if( !ph->processRpcCommand( command, reply ) ) {
             reply.addString( ( std::string( "Command " ) + command.toString().c_str() + " not recognized." ).c_str() );
             respond_ok = false;
         }
-        ph->unlock();
+        ph->unlock();   
+        // ph unlocked 
         
-         // if reply is empty put something into it, otherwise the rpc communication gets stuck
+        // if reply is empty put something into it, otherwise the rpc communication gets stuck
         if( reply.size() == 0 )
             reply.addString( ( std::string( "Command " ) + command.toString().c_str()+" received." ).c_str() );
         return respond_ok;
     }
     
-    virtual void parameterUpdated(const paramHelp::ParamProxyInterface *pd)
+    /**
+     * @brief custom parameter updated handler: could be redefined in subclasses
+     * 
+     * @param pd the ParamProxyInterface* of the updated param
+     */
+    virtual void custom_parameterUpdated(const paramHelp::ParamProxyInterface *pd)
     {
-        return;
+    }
+    
+    /**
+     * @brief custom command received handler: could be redefined in subclasses
+     * 
+     * @param cd the CommandDescription object related to the command received
+     * @param params the parameters of the command received
+     * @param reply the reply of the module
+     */
+    virtual void custom_commandReceived(const paramHelp::CommandDescription &cd, const yarp::os::Bottle &params, yarp::os::Bottle &reply)
+    {
+    }
+    
+    /**
+     * @brief handler called when a parameter is updated: it calls the custom_parameterUpdated() function
+     * 
+     * @param pd the ParamProxyInterface* of the updated param
+     */
+    void parameterUpdated(const paramHelp::ParamProxyInterface *pd) final
+    {
+        // call custom parameterUpdated
+        custom_parameterUpdated( pd );
     }
 
-
-    virtual void commandReceived(const paramHelp::CommandDescription &cd, const yarp::os::Bottle &params, yarp::os::Bottle &reply)
+    /**
+     * @brief handler called when a command is received: it handles the standard commmand as specified in their descriptions and it calls the custom_commandReceived() function
+     * 
+     * @param cd the CommandDescription object related to the command received
+     * @param params the parameters of the command received
+     * @param reply the reply of the module
+     */
+    void commandReceived(const paramHelp::CommandDescription &cd, const yarp::os::Bottle &params, yarp::os::Bottle &reply) final
     {
         switch(cd.id)
         {
+        // help command
         case COMMAND_ID_HELP:
-            ph->getHelpMessage(reply);
+            {
+                ph->getHelpMessage(reply);
+            }
             break;
+        // save parameters command
         case COMMAND_ID_SAVE_PARAMS:
             {
-                /*std::string fileName = rf->find( "from" ).asString();
-                
+                // get the filename from the params of the save command
+                std::string fileName = params.get( 0 ).toString();
+                // get the folder name TODO: changhe the deprecated function
                 std::string folderName = rf.getContextPath() + "/";
-                std::string confPath = folderName + fileName;
+                // complete conf path
+                std::string confPath = has_suffix( fileName, ".ini" ) ? folderName + fileName : folderName + fileName + ".ini";
+                // create the params to save array
                 std::vector<int> configIds;
-                for(unsigned int i = 0; i < PARAM_ID_SIZE; ++i)
-                    if( sot_VelKinCon_ParamDescr[i]->ioType.value == paramHelp::PARAM_IN_OUT ||
-                        sot_VelKinCon_ParamDescr[i]->ioType.value == paramHelp::PARAM_INPUT  ||
-                        sot_VelKinCon_ParamDescr[i]->ioType.value == paramHelp::PARAM_CONFIG )
-                        configIds.push_back(i);
+                int param_size = actual_ph_parameters.size();
+                for(unsigned int i = 0; i < param_size; ++i) {
+                    if( actual_ph_parameters[i]->ioType.value == paramHelp::PARAM_IN_OUT ||
+                        actual_ph_parameters[i]->ioType.value == paramHelp::PARAM_INPUT  ||
+                        actual_ph_parameters[i]->ioType.value == paramHelp::PARAM_CONFIG ) {
+                        //add the parameter if the condition is verified
+                        configIds.push_back( i );
+                    }
+                }
 
-                std::cout << "Saving to " << confPath;
-
-                std::stringstream ss;
-                boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
-                boost::posix_time::time_facet* output_facet = new boost::posix_time::time_facet("%Y%m%dT%H%M%S%F%q");
-                ss.imbue(std::locale(ss.getloc(), output_facet));
-                ss << pt;
-                std::string confPathWithTimestamp = confPath + "." + ss.str();
-
-                std::cout << " and " << confPathWithTimestamp;
-                reply.addString("saving...");
-
-                if( ph->writeParamsOnFile( confPathWithTimestamp,
-                                                    configIds.data(),
-                                                    configIds.size())) {
-                    if(boost::filesystem::exists(confPath))
-                            boost::filesystem::remove(confPath);
-                    ph->writeParamsOnFile( confPath,
-                                                    configIds.data(),
-                                                    configIds.size());
-                    reply.addString("ok");
-                } else
-                    reply.addString("failed!");*/
+                // write on the file specified by the confPath
+                reply.addString("Saving to " + confPath + " ... ");         
+                ph->writeParamsOnFile(  confPath,
+                                        configIds.data(),
+                                        configIds.size());
+                reply.addString("ok");
             }
             break;
         }
+        // call custom commandReceived
+        custom_commandReceived( cd, params, reply );
     }
-    
-    
-    
+
     /**
      * @brief generic module standard configure: take the rf (custom or standard) and initialize the mandatory params. 
      *        It calls the custom_configure() at the end of the function. 
@@ -360,25 +442,20 @@ public:
     {
         // set the name of the module
         setName( module_prefix.c_str() );
-        
-        
-
+       
         // get the data for the param heleper using copy constructor to avoid problems on delete
-        actual_ph_parameters = std::vector<paramHelp::ParamProxyInterface *>( get_ph_parameters() );
-        actual_ph_commands = std::vector<paramHelp::CommandDescription>( get_ph_commands() );
+        actual_ph_parameters =  get_ph_parameters();
+        actual_ph_commands =  get_ph_commands();
         // switch to standard c const vector
         const paramHelp::ParamProxyInterface * const* ph_parameters =  &actual_ph_parameters[0];
         const paramHelp::CommandDescription* ph_commands =  &actual_ph_commands[0];
         // create the param helper
-        ph = new paramHelp::ParamHelperServer(  ph_parameters, actual_ph_parameters.size(),
-                                                ph_commands , actual_ph_commands.size() );
+        ph = std::make_shared<paramHelp::ParamHelperServer>( ph_parameters, actual_ph_parameters.size(),
+                                                            ph_commands , actual_ph_commands.size() );
         // link parameters
         ph_link_parameters();
         // register commands
         ph_register_commands();
-        
-        
-        
         
         // check the rf and the mandatory params initialization
         if( initializeMandatoryParam() ) {
@@ -407,7 +484,7 @@ public:
     }
     
     /**
-     * @brief cutom configure function: could be redefined in subclasses.
+     * @brief custom configure function: could be redefined in subclasses
      *
      * @return true on succes. False otherwise.
      **/
@@ -417,16 +494,16 @@ public:
     }
     
     /**
-     * @brief call configure, create a new custom thread and make it start .
+     * @brief call configure, create a new custom thread and make it start 
      *
-     * @return true if the thread correctly starts and the configure has success. False otherwise.
+     * @return true if the thread correctly starts and the configure has success. False otherwise
      **/
     bool start()
     {
         //call configure - if it has success create the thread and make it start
         if( configure( rf ) ) {
             // create the thread 
-            thread = new T( module_prefix, thread_period, rf );
+            thread = new T( module_prefix, rf, ph );
             // start the thread 
             if( !thread->start() )
             {   // error starting the thread
@@ -452,12 +529,6 @@ public:
     {
         //call cutom_close
         bool custom_close_ret = custom_close();
-        //delete param helper
-        if( ph ) {
-            ph->close();
-            delete ph;
-            ph = NULL;
-        }
         // could happend that alive is false here -> close called in automatic after updateModule return false
         if( alive ){
             thread->stop();
@@ -566,69 +637,67 @@ public:
         actual_num_seq++;
         // get the command
         std::string switch_command;
-        if(switch_interface->getCommand(switch_command)) {
-            std::cout<<"Switch Interface received: "<<switch_command<<std::endl;
+        if( switch_interface->getCommand( switch_command ) ) {
+            std::cout << "Switch Interface received: " << switch_command << std::endl;
+            
             //stop command
-            if(switch_command == "stop") {
-                if(this->isAlive()) {
-                      std::cout<<"Stopping module"<<std::endl;
-                      this->close();
-                }
-            }
-            //start command
-            else if(switch_command == "start") {
-                if(this->isAlive()) {
-                    std::cout<<"Starting module"<<std::endl;
+            if( switch_command == "stop" ) {
+                if( this->isAlive() ) {
+                    std::cout << "Stopping module" << std::endl;
                     this->close();
                 }
-                std::cout<<"Starting module"<<std::endl;       
-                if(this->start()) {
-                    std::cout<<"Module is started"<<std::endl;
+            }
+            
+            //start command
+            else if( switch_command == "start" ) {
+                if( this->isAlive() ) {
+                    std::cout << "Stopping module" << std::endl;
+                    this->close();
+                }
+                std::cout << "Starting module" << std::endl;       
+                if( this->start() ) {
+                    std::cout << "Module is started" << std::endl;
                 }
                 else {
-                    std::cout<<"Error starting Module"<<std::endl;
+                    std::cout << "Error starting Module" << std::endl;
                 }
             }
+            
             // pause command
-            else if(switch_command == "pause") {
-                if(this->isAlive()) {
-                std::cout<<"Module Suspended"<<std::endl;
-                this->pause();
+            else if( switch_command == "pause" ) {
+                if( this->isAlive() ) {
+                    std::cout << "Module Paused" << std::endl;
+                    this->pause();
                 }
             }
+            
             // resume command
-            else if(switch_command == "resume") {
-                if(this->isAlive()) {
-                    std::cout<<"Module Resumed"<<std::endl;
+            else if( switch_command == "resume" ) {
+                if( this->isAlive() ) {
+                    std::cout << "Module Resumed" << std::endl;
                     this->resume();
                 }
             }
+            
             // quit command
-            else if(switch_command == "quit") {
-                std::cout<<"Quit"<<std::endl;
-                std::cout<<"Closing the module ... "<<std::endl;
+            else if( switch_command == "quit" ) {
+                std::cout << "Quit" << std::endl;
+                std::cout << "Closing the module ... " << std::endl;
                 return false;
             }
             else {
-                std::cout<<switch_command<<" is not vaild"<<std::endl;
+                std::cout << switch_command << " is not vaild" << std::endl;
             }
         }
+        // true if the module is not quitted
         return true;
     }
     
+    /**
+     * @brief virtual generic module destructor
+     */
     virtual ~generic_module()
     {
-        // delete switch interface
-        if ( switch_interface ) {
-            delete switch_interface;
-            switch_interface = NULL;
-        }
-        // delete status interface
-        if ( status_interface ) {
-            status_interface->stop();
-            delete status_interface;
-            status_interface = NULL;
-        }
     }
   
 };
