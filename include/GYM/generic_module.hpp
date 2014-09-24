@@ -474,7 +474,7 @@ public:
             }
             else {
                 // error on the param helper initialization
-                std::cout << "Error while initializing parameter helper." << std::endl;
+                std::cout << "Error while initializing param helper." << std::endl;
                 return false;
             }
         }

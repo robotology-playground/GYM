@@ -15,7 +15,7 @@
  **/
 class generic_thread : public yarp::os::RateThread
 {
-protected:
+private:
     
     std::string module_prefix;
     double thread_period;
@@ -81,6 +81,58 @@ public:
     virtual void custom_release() 
     {
     }
+    
+    /**
+     * @brief getter method for the module prefix of the module that controls that thread
+     * 
+     * @return the module prefix of the module that controls that thread
+     */
+    std::string get_module_prefix() 
+    {
+        return module_prefix;
+    }
+    
+    /**
+     * @brief getter method for the period of the thread
+     * 
+     * @return the period of the thread
+     */
+    double get_thread_period()
+    {
+        return thread_period;
+    }
+    
+    /**
+     * @brief getter method for the name of the robot
+     * 
+     * @return the name of the robot
+     */
+    std::string get_robot_name()
+    {
+        return robot_name;
+    }
+    
+    /**
+     * @brief getter method for the resource finder
+     * 
+     * @return the resource finder
+     */
+    yarp::os::ResourceFinder get_resource_finder()
+    {
+        return rf;
+    }
+    
+    /**
+     * @brief getter method for the param helper
+     * 
+     * @return the param helper
+     */
+    std::shared_ptr<paramHelp::ParamHelperServer> get_param_helper()
+    {
+        return ph;
+    }
+    
+    
   
 };
 
