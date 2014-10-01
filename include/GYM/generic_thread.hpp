@@ -42,7 +42,7 @@ public:
                                                                             ph( ph ),
                                                                             RateThread( thread_period )
     {    
-        std::cout << "Thread Period : " << thread_period << std::endl; 
+        std::cout << "Thread Period : " << thread_period << "[msec]" << std::endl; 
         std::cout << "Robot Name : " << robot_name << std::endl; 
     }
     

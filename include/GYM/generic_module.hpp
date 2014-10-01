@@ -17,14 +17,14 @@
 #include "generic_thread.hpp"
 
 // param helper define for params
-#define PARAM_ID_DT 0
-#define PARAM_ID_ROBOT 1
+#define PARAM_ID_DT 1000
+#define PARAM_ID_ROBOT 1001
 #define PARAM_SIZE_DT 1
 #define PARAM_SIZE_ROBOT 1
 
 // param helper define for commands
-#define COMMAND_ID_HELP 0
-#define COMMAND_ID_SAVE_PARAMS 1
+#define COMMAND_ID_HELP 1000
+#define COMMAND_ID_SAVE_PARAMS 1001
 
 /**
  * @brief auxiliary struct to specify a constraint between T and B.
