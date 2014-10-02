@@ -39,7 +39,7 @@ include(YCMDefaultDirs)
 ycm_default_dirs(${VARS_PREFIX})
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES drc_shared planner_msgs idynutils drc_utils tests_utils
+  LIBRARIES drc_shared planner_msgs idynutils drc_utils tests_utils generic_module
 )
 
 include_directories(
@@ -88,8 +88,15 @@ add_library(planner_msgs
   src/planner_msgs/flat_walk_plan.cpp
 )
 
+add_library(generic_module SHARED src/generic.cpp
+                                  include/drc_shared/generic_module.hpp 
+                                  include/drc_shared/generic_thread.hpp)
+#set_target_properties(generic_module PROPERTIES LINKER_LANGUAGE CXX)
+
 target_link_libraries(drc_utils    ${PCL_LIBRARIES}
                                    ${rosconsole_LIBRARIES})
+
+target_link_libraries(tests_utils  ${orocos_kdl_LIBRARIES})
 
 target_link_libraries(drc_shared   ${iDynTree_LIBRARIES})
 
@@ -111,7 +118,9 @@ target_link_libraries(idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
                                 ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
                                 ${YARP_LIBRARIES} icubmod)
 
-install(TARGETS drc_shared planner_msgs idynutils drc_utils tests_utils
+target_link_libraries(generic_module ${YARP_LIBRARIES})
+
+install(TARGETS drc_shared planner_msgs idynutils drc_utils tests_utils generic_module
   grabber_example module_state_streamer_example # examples, comment this if not needed
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -154,7 +163,7 @@ install(TARGETS idynutils
         PUBLIC_HEADER DESTINATION "${${VARS_PREFIX}_INSTALL_INCLUDEDIR}/idynutils" COMPONENT dev)
 
         
-set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared idynutils drc_utils tests_utils)
+set_property(GLOBAL APPEND PROPERTY ${VARS_PREFIX}_TARGETS drc_shared idynutils drc_utils tests_utils generic_module)
 
 
 include(InstallBasicPackageFiles)
