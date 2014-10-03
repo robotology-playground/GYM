@@ -20,13 +20,15 @@ link_directories(${GTEST_LIB_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} )
 enable_testing()
 
-add_custom_target(  drc_shared_test ALL
-                    COMMAND ${CMAKE_CTEST_COMMAND}
-                    DEPENDS drc_utils idynutils drc_shared tests_utils
-                            CartesianUtilsTest
-                            iDynUtilsTest
-                            testUtilsTest
-                            interfacesTest )
+if( YCM_EP_DEVEL_MODE_drc_shared)
+    add_custom_target(  drc_shared_test ALL
+                        COMMAND ${CMAKE_CTEST_COMMAND}
+                        DEPENDS drc_utils idynutils drc_shared tests_utils
+                                CartesianUtilsTest
+                                iDynUtilsTest
+                                testUtilsTest
+                                interfacesTest )
+endif()
 
 SET(interfacesTestLibs drc_shared ${YARP_LIBRARIES} ${ACE_LIBRARIES})
 ADD_EXECUTABLE(interfacesTest test_interfaces.cpp)
