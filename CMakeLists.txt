@@ -59,6 +59,11 @@ include_directories(${PCL_INCLUDE_DIRS})
 find_package(YARP 2.3.60)
 include_directories(${YARP_INCLUDE_DIRS})
 
+# find YARP
+find_package(paramHelp REQUIRED)
+include_directories(${paramHelp_INCLUDE_DIRS})
+
+
 add_subdirectory(src/MotorControlHelpers)
 
 ## Declare drc_utils library for utils containing exotic shared libraries
@@ -118,7 +123,8 @@ target_link_libraries(idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
                                 ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
                                 ${YARP_LIBRARIES} icubmod)
 
-target_link_libraries(generic_module ${YARP_LIBRARIES})
+target_link_libraries(generic_module ${YARP_LIBRARIES} ${paramHelp_LIBRARIES})
+
 
 install(TARGETS drc_shared planner_msgs idynutils drc_utils tests_utils generic_module
   grabber_example module_state_streamer_example # examples, comment this if not needed
