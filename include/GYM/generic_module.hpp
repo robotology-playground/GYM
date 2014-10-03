@@ -77,6 +77,7 @@ private:
     // switch and status interface of the module
     std::shared_ptr<walkman::drc::yarp_switch_interface> switch_interface;
     std::shared_ptr<walkman::drc::yarp_status_interface> status_interface;
+    std::string actual_status;
     int actual_num_seq;
     // resource finder
     yarp::os::ResourceFinder rf;  
@@ -274,6 +275,7 @@ public:
                                                     rf( rf ),
                                                     alive( false ),
                                                     actual_num_seq( 0 ),
+                                                    actual_status(),
                                                     switch_interface( std::make_shared<walkman::drc::yarp_switch_interface>( module_prefix ) ),
                                                     status_interface( std::make_shared<walkman::drc::yarp_status_interface>( module_prefix + "/module" ) )
 
@@ -330,9 +332,7 @@ public:
      */
     virtual bool respond(const yarp::os::Bottle& command,  yarp::os::Bottle& reply) final
     {
-        std::cout << "cmd : " << command.toString() << std::endl;
         bool respond_ok = true;
-        
         // ph locked
         ph->lock();
         // try to process the command received
@@ -402,8 +402,8 @@ public:
             {
                 // get the filename from the params of the save command
                 std::string fileName = params.get( 0 ).toString();
-                // get the folder name TODO: changhe the deprecated function
-                std::string folderName = rf.getContextPath() + "/";
+                // get the folder name 
+                std::string folderName = rf.getHomeContextPath() + "/";
                 // complete conf path
                 std::string confPath = has_suffix( fileName, ".ini" ) ? folderName + fileName : folderName + fileName + ".ini";
                 // create the params to save array
@@ -419,11 +419,11 @@ public:
                 }
 
                 // write on the file specified by the confPath
-                reply.addString("Saving to " + confPath + " ... ");         
+                reply.addString( "Saving to " + confPath + " ... " );         
                 ph->writeParamsOnFile(  confPath,
                                         configIds.data(),
                                         configIds.size());
-                reply.addString("ok");
+                reply.addString( "ok"  );
             }
             break;
         }
@@ -459,14 +459,25 @@ public:
         
         // check the rf and the mandatory params initialization
         if( initializeMandatoryParam() ) {
-            // param helper param init
+            
+            // param helper params init
             yarp::os::Bottle init_msg;
-            ph->initializeParams( rf, init_msg );
-            paramHelp::printBottle( init_msg );
-            // attach to the module the rpc port for the param helper
-            attach( rpc_port );
-            // open the rpc port for the param helper
-            rpc_port.open( "/"+ module_prefix +"/rpc" );
+            if( ph->initializeParams( rf, init_msg ) ) {
+                // print the bottle
+                paramHelp::printBottle( init_msg );
+                // attach to the module the rpc port for the param helper
+                attach( rpc_port );
+                // open the rpc port for the param helper
+                rpc_port.open( "/"+ module_prefix +"/rpc" );
+            }
+            else {
+                // error on the parameters initialization
+                std::cout << "Error while initializing param helper parameters from resource finder: further details below" << std::endl;
+                // print the bottle
+                paramHelp::printBottle( init_msg );
+                return false;
+            }
+            
             // call the init on the param helper
             if( ph->init( module_prefix ) ) {
                 //call the custom configure
@@ -550,25 +561,27 @@ public:
     }
     
     /**
-     * @brief suspend the thread.
+     * @brief call custom_pause on the thread and suspend the thread.
      *
-     * @return always true
+     * @return true if custom_pause has succes. False otherwise.
      **/
-    bool pause() 
+    virtual bool pause() final
     {
+        bool custom_pause_ret = thread->custom_pause();
         thread->suspend();
-        return true;
+        return custom_pause_ret;
     }
     
     /**
-     * @brief resume the thread.
+     * @brief call custom_resume on the thread and resume the thread.
      *
-     * @return always true
+     * @return true if custom_resume has succes. False otherwise.
      **/
-    bool resume() 
+    virtual bool resume() final
     {
+        bool custom_resume_ret = thread->custom_resume();
         thread->resume();
-        return true;
+        return custom_resume_ret;
     }
     
     /**
@@ -633,12 +646,18 @@ public:
     bool updateModule() 
     {
         // status update
-        status_interface->setStatus( "Module alive at updateModule : #" + std::to_string(actual_num_seq), actual_num_seq);
+        if( this->isAlive() ) {
+            actual_status =  "Control Thread alive at updateModule : #";
+        }
+        else {
+            actual_status =  "Control Thread NOT alive at updateModule : #";
+        }
+        status_interface->setStatus( actual_status + std::to_string(actual_num_seq), actual_num_seq);
         actual_num_seq++;
         // get the command
         std::string switch_command;
         if( switch_interface->getCommand( switch_command ) ) {
-            std::cout << "Switch Interface received: " << switch_command << std::endl;
+            std::cout << "Switch Interface cmd received: " << switch_command << std::endl;
             
             //stop command
             if( switch_command == "stop" ) {
