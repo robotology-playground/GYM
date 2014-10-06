@@ -42,8 +42,6 @@ public:
                                                                             ph( ph ),
                                                                             RateThread( thread_period )
     {    
-        std::cout << "Thread Period : " << thread_period << "[msec]" << std::endl; 
-        std::cout << "Robot Name : " << robot_name << std::endl; 
     }
     
     
@@ -58,11 +56,33 @@ public:
     }
     
     /**
-     * @brief custom initialization function: must be overrided by sub-classes.
+     * @brief custom initialization function: called before run(), must be overrided by sub-classes
      * 
      * @return true on success, false otherwise.
      */
     virtual bool custom_init() = 0;
+    
+    
+    /**
+     * @brief custom pause function: called before pausing the thread
+     *
+     * @return true on succes. False otherwise.
+     **/
+    virtual bool custom_pause()
+    {
+        return true;
+    }
+    
+    /**
+     * @brief custom resume function: called before resuming the thread
+     *
+     * @return true on succes. False otherwise.
+     **/
+    virtual bool custom_resume()
+    {
+        return true;
+    }
+    
     
     /**
      * @brief release method of the thread.
@@ -75,7 +95,7 @@ public:
     }
        
     /**
-    * @brief custom release function: could be overrided by sub-classes.
+    * @brief custom release function: called befire releasing the thread
     * 
     */
     virtual void custom_release() 
