@@ -78,36 +78,27 @@ namespace walkman
         private:
             yarp::os::BufferedPort<yarp::os::Bottle> command_port;    
         };
-        
-        
 
         template<class command_type> class internal_yarp_command_interface
         {
-            
         public:
-            
             internal_yarp_command_interface(const std::string& module_prefix,const std::string& port_suffix)
             {
                 std::string temp="/"+module_prefix+port_suffix;
                 command_port.open(temp.c_str());
-                
             }
             
             bool getCommand ( command_type& cmd, int& seq_num )
             {
                 yarp::os::Bottle* bot_command = command_port.read(false);
-                
                 int seq_num_i = -1;
-                
                 if(bot_command != NULL) {
                     seq_num_i = bot_command->pop().asInt();
 		    command_i.fromBottle(bot_command);
 		    cmd=command_i;
 		    seq_num=seq_num_i;
-                    
 		    return true;
                 }
-                
                 seq_num=seq_num_i;
                 return false;
             }
@@ -123,13 +114,11 @@ namespace walkman
             internal_yarp_command_interface(const std::string& module_prefix,const std::string& port_suffix)
             {
                 command_port.open("/"+module_prefix+port_suffix);
-                
             }
             
             bool getCommand(int& command)
             {
                 yarp::os::Bottle* bot_command = command_port.read(false);
-                
                 if(bot_command != NULL) {
                     command= bot_command->get(0).asInt();
                     return true;
@@ -139,11 +128,9 @@ namespace walkman
             
             std::string getCommand()
             {
-                
                 yarp::os::Bottle* bot_command = command_port.read(false);
-                
                 if(bot_command != NULL) {
-                    command_i= bot_command->get(0).asString();
+                    std::string command_i= bot_command->get(0).asString();
                     return command_i;
                 }
                 return "";
@@ -154,39 +141,34 @@ namespace walkman
                 yarp::os::Bottle* bot_command = command_port.read(false);
                 
                 if(bot_command != NULL) {
-                    command_i= bot_command->get(0).asString();
-		    cmd=command_i;
+                    cmd = bot_command->get(0).asString();
                     return true;
                 }
-                cmd=command_i;
-                return false;
+                else
+                {
+                    cmd="";
+                    return false;
+                }
             }
             
             bool getCommand ( std::string& cmd, int& seq_num )
             {
                 yarp::os::Bottle* bot_command = command_port.read(false);
-                
-                int seq_num_i = -1;
-                
                 if(bot_command != NULL) {
-                    seq_num_i = bot_command->pop().asInt();
-                    command_i= bot_command->get(0).asString();
-		    cmd=command_i;
+                    seq_num = bot_command->pop().asInt();
+                    cmd= bot_command->get(0).asString();
                     return true;
                 }
-                cmd=command_i;
-                seq_num=seq_num_i;
-                return false;
+                else
+                {
+                    cmd="";
+                    seq_num=-1;
+                    return false;
+                }
             }
         private:
-            std::string command_i;
             yarp::os::BufferedPort<yarp::os::Bottle> command_port;
         };
-        
-        
-        
-        
-        
     }
 }
 
