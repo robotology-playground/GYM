@@ -18,7 +18,7 @@ namespace walkman
         template<class command_type> class internal_yarp_command_sender_interface
         {
         public:
-            internal_yarp_command_sender_interface(const std::string& module_prefix_,const std::string& port_suffix,yarp::os::Network* network)
+            internal_yarp_command_sender_interface(const std::string& module_prefix_,const std::string& port_suffix)
             {
 	        auto module_prefix=module_prefix_;
                 if (module_prefix[0]=='/') module_prefix=module_prefix.substr(1);
@@ -28,7 +28,7 @@ namespace walkman
                 command_port.open(temp_o.c_str());
                 yarp::os::ContactStyle style;
                 style.persistent = true;
-                network->connect(temp_o.c_str(),temp_i.c_str(), style);
+                yarp::os::Network::connect(temp_o.c_str(),temp_i.c_str(), style);
             }
             
             bool sendCommand(command_type& cmd, int seq_num=0)
@@ -47,7 +47,7 @@ namespace walkman
         template<> class internal_yarp_command_sender_interface<std::string>
         {
         public:
-            internal_yarp_command_sender_interface(const std::string& module_prefix,const std::string& port_suffix,yarp::os::Network* network)
+            internal_yarp_command_sender_interface(const std::string& module_prefix,const std::string& port_suffix)
             {
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
@@ -55,7 +55,7 @@ namespace walkman
                 command_port.open(temp_o.c_str());
                 yarp::os::ContactStyle style;
                 style.persistent = true;
-                network->connect(temp_o.c_str(),temp_i.c_str(), style);
+                yarp::os::Network::connect(temp_o.c_str(),temp_i.c_str(), style);
             }
             
             bool sendCommand(const std::string& cmd, int seq_num=0)
