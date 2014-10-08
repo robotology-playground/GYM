@@ -74,8 +74,9 @@ private:
     double thread_period;
     // name of the robot
     std::string robot_name;
-    // switch and status interface of the module
+    // switch interface of the module
     std::shared_ptr<walkman::drc::yarp_switch_interface> switch_interface;
+    // status interface of the module
     std::shared_ptr<walkman::drc::yarp_status_interface> status_interface;
     std::string actual_status;
     int actual_num_seq;
@@ -134,7 +135,7 @@ private:
         // insert save_params command
         standard_ph_commands.push_back(paramHelp::CommandDescription(   "save_params",
                                                                         COMMAND_ID_SAVE_PARAMS,
-                                                                        "save_params <file_name>: Save the actual configuration parameters to file, inside the resource finder context folder") );
+                                                                        "Usage -> save_params <file_name>. Save the actual configuration parameters to file, inside the resource finder context folder") );
         return standard_ph_commands;
     }
     
@@ -410,11 +411,12 @@ public:
                 std::vector<int> configIds;
                 int param_size = actual_ph_parameters.size();
                 for(unsigned int i = 0; i < param_size; ++i) {
+                    std::cout << actual_ph_parameters[i]->name << std::endl;
                     if( actual_ph_parameters[i]->ioType.value == paramHelp::PARAM_IN_OUT ||
                         actual_ph_parameters[i]->ioType.value == paramHelp::PARAM_INPUT  ||
                         actual_ph_parameters[i]->ioType.value == paramHelp::PARAM_CONFIG ) {
                         //add the parameter if the condition is verified
-                        configIds.push_back( i );
+                        configIds.push_back( actual_ph_parameters[i]->id );
                     }
                 }
 
@@ -662,7 +664,7 @@ public:
             //stop command
             if( switch_command == "stop" ) {
                 if( this->isAlive() ) {
-                    std::cout << "Stopping module" << std::endl;
+                    std::cout << "Stopping control thread" << std::endl;
                     this->close();
                 }
             }
@@ -670,22 +672,22 @@ public:
             //start command
             else if( switch_command == "start" ) {
                 if( this->isAlive() ) {
-                    std::cout << "Stopping module" << std::endl;
+                    std::cout << "Stopping control thread" << std::endl;
                     this->close();
                 }
                 std::cout << "Starting module" << std::endl;       
                 if( this->start() ) {
-                    std::cout << "Module is started" << std::endl;
+                    std::cout << "Control thread is started" << std::endl;
                 }
                 else {
-                    std::cout << "Error starting Module" << std::endl;
+                    std::cout << "Error starting control thread" << std::endl;
                 }
             }
             
             // pause command
             else if( switch_command == "pause" ) {
                 if( this->isAlive() ) {
-                    std::cout << "Module Paused" << std::endl;
+                    std::cout << "Control thread paused" << std::endl;
                     this->pause();
                 }
             }
@@ -693,7 +695,7 @@ public:
             // resume command
             else if( switch_command == "resume" ) {
                 if( this->isAlive() ) {
-                    std::cout << "Module Resumed" << std::endl;
+                    std::cout << "Control thread resumed" << std::endl;
                     this->resume();
                 }
             }
