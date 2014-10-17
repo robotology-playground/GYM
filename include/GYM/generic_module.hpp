@@ -211,11 +211,13 @@ private:
             }
             else {
                 //thread period is not an int
+		std::cerr << "Error: thread_period param found but NOT an int" << std::endl;
                 return false;
             }
         }
         else {
             //thread period does not exist
+	    std::cerr << "Error: thread period param NOT found" << std::endl;
             return false;
         }
         
@@ -227,11 +229,13 @@ private:
             }
             else {
                 //robot name is not a string
+		std::cerr << "Error: robot_name param found but NOT a string" << std::endl;
                 return false;
             }
         }
         else {
             //robot name does not exist
+	    std::cerr << "Error: robot_name pram NOT found" << std::endl;
             return false;
         }
         
@@ -434,7 +438,7 @@ public:
     }
 
     /**
-     * @brief generic module standard configure: take the rf (custom or standard) and initialize the mandatory params. 
+     * @brief generic module standard configure: take the rf and initialize the mandatory params. 
      *        It calls the custom_configure() at the end of the function. 
      * @param rf resource finder.
      * 
@@ -474,7 +478,7 @@ public:
             }
             else {
                 // error on the parameters initialization
-                std::cout << "Error while initializing param helper parameters from resource finder: further details below" << std::endl;
+                std::cerr << "Error while initializing param helper parameters from resource finder: further details below" << std::endl;
                 // print the bottle
                 paramHelp::printBottle( init_msg );
                 return false;
@@ -487,11 +491,13 @@ public:
             }
             else {
                 // error on the param helper initialization
-                std::cout << "Error while initializing param helper." << std::endl;
+                std::cerr << "Error while opening the param helper YARP info and stream ports." << std::endl;
                 return false;
             }
         }
         else {
+	    // error on param helper mandatory params
+	    std::cerr << "Error while initializing param helper mandatory param" << std::endl;
             return false;
         }
     }
@@ -514,7 +520,7 @@ public:
     bool start()
     {
         //call configure - if it has success create the thread and make it start
-        if( configure( rf ) ) {
+//         if( configure( rf ) ) {
             // create the thread 
             thread = new T( module_prefix, rf, ph );
             // start the thread 
@@ -526,11 +532,11 @@ public:
             }
             alive = true;
             return true;
-        }
-        // configure error
-        else {
-            return false;
-        }
+//         }
+//         // configure error
+//         else {
+//             return false;
+//         }
     }
 
     /**
