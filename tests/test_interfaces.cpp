@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     yarp_command_interface a("test_module");
     yarp_switch_interface b("test_module");
     yarp_status_interface c("test_module");
-    yarp_ft_interface d("right_arm");
+    yarp_ft_interface d("right_arm","test_module","coman");
     yarp_single_chain_interface e("right_arm","test_module","coman");
 
     yarp_IMU_interface imu("test_module");
