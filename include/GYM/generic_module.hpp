@@ -468,11 +468,11 @@ public:
                 // attach to the module the rpc port for the param helper
                 attach( rpc_port );
                 // open the rpc port for the param helper
-                rpc_port.open( "/"+ robot_name + "/" + module_prefix +"/rpc" );
+                rpc_port.open( "/" + module_prefix +"/rpc" );
 		// open standard switch interface
-		switch_interface = std::make_shared<walkman::drc::yarp_switch_interface>( robot_name + "/" + module_prefix ) ;
+		switch_interface = std::make_shared<walkman::drc::yarp_switch_interface>( module_prefix ) ;
 		// open status interface
-		status_interface = std::make_shared<walkman::drc::yarp_status_interface>( robot_name + "/" + module_prefix + "/module" ) ;
+		status_interface = std::make_shared<walkman::drc::yarp_status_interface>( module_prefix + "/module" ) ;
 		// status rate setted at the half of the module period
 		status_interface->setRate( module_period / 2 );
 		status_interface->start();
@@ -486,7 +486,7 @@ public:
             }
             
             // call the init on the param helper
-            if( ph->init(  robot_name + "/" + module_prefix ) ) {
+            if( ph->init( module_prefix ) ) {
                 //call the custom configure
                 return custom_configure( rf );
             }
