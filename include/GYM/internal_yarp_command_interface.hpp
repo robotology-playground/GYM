@@ -24,11 +24,54 @@ namespace walkman
                 if (module_prefix[0]=='/') module_prefix=module_prefix.substr(1);
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
+                std::string temp_o_num=temp_o;
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(1);
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(2);
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(3);
                 
-                command_port.open(temp_o.c_str());
+                /*
+                 * ALTERNATIVE VERSION WITH ONLY 1 QUERY BUT MORE RESULTS IN THE MESSAGE
+                yarp::os::ContactStyle style;
+                style.quiet = true;
+                yarp::os::Bottle cmd, reply;
+                cmd.add("name");
+                cmd.add("list");
+                for (int i=0; i<argc; i++) {
+                    Value v;
+                    v.fromString(argv[i]);
+                    cmd.add(v);
+                }
+                bool ok = NetworkBase::writeToNameServer(cmd,
+                                                         reply,
+                                                         style);
+                if (!ok) {
+                    ACE_OS::fprintf(stderr, "Failed to reach name server\n");
+                    return 1;
+                }
+                if (reply.size()==1&&reply.get(0).isString()) {
+                    printf("%s", reply.get(0).asString().c_str());
+                } else if (reply.get(0).isVocab() && reply.get(0).asVocab()==VOCAB4('m','a','n','y')) {
+                    for (int i=1; i<reply.size(); i++) {
+                        Value& v = reply.get(i);
+                        if (v.isString()) {
+                            printf("  %s\n", v.asString().c_str());
+                        } else {
+                            printf("  %s\n", v.toString().c_str());
+                        }
+                    }
+                } else {
+                    printf("%s\n", reply.toString().c_str());
+                }
+                grep registration | awk '{print $3 }'| grep ^\/
+                */
+
+                command_port.open(temp_o_num.c_str());
                 yarp::os::ContactStyle style;
                 style.persistent = true;
-                yarp::os::Network::connect(temp_o.c_str(),temp_i.c_str(), style);
+                yarp::os::Network::connect(temp_o_num.c_str(),temp_i.c_str(), style);
             }
             
             bool sendCommand(command_type& cmd, int seq_num=0)
@@ -51,11 +94,18 @@ namespace walkman
             {
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
+                std::string temp_o_num=temp_o;
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(1);
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(2);
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(3);
                 
-                command_port.open(temp_o.c_str());
+                command_port.open(temp_o_num.c_str());
                 yarp::os::ContactStyle style;
                 style.persistent = true;
-                yarp::os::Network::connect(temp_o.c_str(),temp_i.c_str(), style);
+                yarp::os::Network::connect(temp_o_num.c_str(),temp_i.c_str(), style);
             }
             
             bool sendCommand(const std::string& cmd, int seq_num=0)
