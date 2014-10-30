@@ -722,6 +722,16 @@ public:
     }
     
     /**
+     * @brief TODO
+     * 
+     * @return T*
+     */
+    T* get_thread() 
+    {
+	return thread;
+    }
+    
+    /**
      * @brief virtual generic module destructor
      */
     virtual ~generic_module()

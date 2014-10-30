@@ -40,7 +40,7 @@ public:
                                                                             robot_name( rf.find("robot_name").asString() ),
                                                                             rf( rf ),
                                                                             ph( ph ),
-                                                                            RateThread( thread_period )
+                                                                            RateThread( rf.find("thread_period").asInt() )
     {    
     }
     
