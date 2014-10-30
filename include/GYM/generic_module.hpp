@@ -184,6 +184,14 @@ private:
     }
     
     /**
+     * @brief register paramValueChangedCallback and call custom_ph_param_value_changed_callback()
+     */ 
+    void ph_param_value_changed_callback() 
+    {
+        custom_ph_param_value_changed_callback();
+    }
+    
+    /**
      * @brief register the standard commands and call custom_ph_register_commands() for custom commands registration
      */ 
     void ph_register_commands() 
@@ -316,6 +324,14 @@ public:
     }
     
     /**
+     * @brief custom param value changed callbacks for param helper: could be redefined if needed
+     */
+    virtual void custom_ph_param_value_changed_callback() 
+    {
+    }
+
+    
+    /**
      * @brief custom register command for param helper function: should be redefined if custom commands are present
      */
      virtual void custom_ph_register_commands() 
@@ -375,6 +391,7 @@ public:
      */
     void parameterUpdated(const paramHelp::ParamProxyInterface *pd) final
     {
+	std::cout << "Updating a parameter in param helper" << std::endl;
         // call custom parameterUpdated
         custom_parameterUpdated( pd );
     }
@@ -454,6 +471,8 @@ public:
                                                             ph_commands , actual_ph_commands.size() );
         // link parameters
         ph_link_parameters();
+	// register callbacks for param value changed
+	ph_param_value_changed_callback();
         // register commands
         ph_register_commands();
         
@@ -719,6 +738,16 @@ public:
         }
         // true if the module is not quitted
         return true;
+    }
+    
+    /**
+     * @brief getter method for the param helper
+     * 
+     * @return the param helper
+     */
+    std::shared_ptr<paramHelp::ParamHelperServer> get_param_helper()
+    {
+        return ph;
     }
     
     /**
