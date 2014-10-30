@@ -26,6 +26,8 @@ class yarp_status_interface : public yarp::os::RateThread{
     bool data_set;
     int seq_num;
     void send();
+    std::string module_prefix;
+    
     
 public:
     std::string state;            // String description of the module's state (quite common)
@@ -54,7 +56,8 @@ class yarp_status_receiver_interface{
     yarp::os::BufferedPort<yarp::os::Bottle> port;
     std::mutex mtx; 
     std::string port_name;
-        
+    std::string module_prefix;
+    
 public:
     yarp_status_receiver_interface(const std::string& module_prefix);
     

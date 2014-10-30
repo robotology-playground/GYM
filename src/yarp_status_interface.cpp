@@ -11,6 +11,7 @@ using namespace walkman::drc;
 yarp_status_interface::yarp_status_interface(const std::string& module_prefix, const int& period_ms_,
         const std::string& init_state_) :
     port_name("/"+module_prefix+"/status:o"), state(init_state_), RateThread(period_ms_) {
+        this->module_prefix=module_prefix;
 }
 
 void yarp_status_interface::run() {
@@ -49,6 +50,12 @@ bool yarp_status_interface::threadInit() {
     if(port_name == "") {
         assert(false && "State streaming port not specified.");
     }
+    if (!yarp::os::NetworkBase::isConnected("/"+module_prefix+"/status:o",port_name))
+    {
+        yarp::os::ContactStyle style;
+        style.persistent=true;
+        yarp::os::Network::connect("/"+module_prefix+"/status:o",port_name,style);
+    }
     return port.open(port_name);
 }
 
@@ -62,10 +69,14 @@ void yarp_status_interface::setPort(const std::string& port_name_) {
 
 yarp_status_receiver_interface::yarp_status_receiver_interface(const std::string& module_prefix) :
     port_name("/"+module_prefix+"/status:i"){
+    this->module_prefix=module_prefix;
     port.open(port_name);
-    yarp::os::ContactStyle style;
-    style.persistent=true;
-    yarp::os::Network::connect("/"+module_prefix+"/status:o",port_name,style);
+    if (!yarp::os::NetworkBase::isConnected("/"+module_prefix+"/status:o",port_name))
+    {
+        yarp::os::ContactStyle style;
+        style.persistent=true;
+        yarp::os::Network::connect("/"+module_prefix+"/status:o",port_name,style);
+    }
 }
 
 bool yarp_status_receiver_interface::getStatus(std::string& status, int& seq_num, yarp::os::Bottle* bottle_out) {
