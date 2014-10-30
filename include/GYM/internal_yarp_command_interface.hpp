@@ -20,15 +20,58 @@ namespace walkman
         public:
             internal_yarp_command_sender_interface(const std::string& module_prefix_,const std::string& port_suffix)
             {
-	        auto module_prefix=module_prefix_;
+	        this->module_prefix=module_prefix_;
                 if (module_prefix[0]=='/') module_prefix=module_prefix.substr(1);
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
+                std::string temp_o_num=temp_o;
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(1);
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(2);
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(3);
                 
-                command_port.open(temp_o.c_str());
+                /*
+                 * ALTERNATIVE VERSION WITH ONLY 1 QUERY BUT MORE RESULTS IN THE MESSAGE
+                yarp::os::ContactStyle style;
+                style.quiet = true;
+                yarp::os::Bottle cmd, reply;
+                cmd.add("name");
+                cmd.add("list");
+                for (int i=0; i<argc; i++) {
+                    Value v;
+                    v.fromString(argv[i]);
+                    cmd.add(v);
+                }
+                bool ok = NetworkBase::writeToNameServer(cmd,
+                                                         reply,
+                                                         style);
+                if (!ok) {
+                    ACE_OS::fprintf(stderr, "Failed to reach name server\n");
+                    return 1;
+                }
+                if (reply.size()==1&&reply.get(0).isString()) {
+                    printf("%s", reply.get(0).asString().c_str());
+                } else if (reply.get(0).isVocab() && reply.get(0).asVocab()==VOCAB4('m','a','n','y')) {
+                    for (int i=1; i<reply.size(); i++) {
+                        Value& v = reply.get(i);
+                        if (v.isString()) {
+                            printf("  %s\n", v.asString().c_str());
+                        } else {
+                            printf("  %s\n", v.toString().c_str());
+                        }
+                    }
+                } else {
+                    printf("%s\n", reply.toString().c_str());
+                }
+                grep registration | awk '{print $3 }'| grep ^\/
+                */
+
+                command_port.open(temp_o_num.c_str());
                 yarp::os::ContactStyle style;
                 style.persistent = true;
-                yarp::os::Network::connect(temp_o.c_str(),temp_i.c_str(), style);
+                yarp::os::Network::connect(temp_o_num.c_str(),temp_i.c_str(), style);
             }
             
             bool sendCommand(command_type& cmd, int seq_num=0)
@@ -41,6 +84,7 @@ namespace walkman
             }
         private:
             yarp::os::BufferedPort<yarp::os::Bottle> command_port;
+            std::string module_prefix;
         };
         
         
@@ -49,13 +93,21 @@ namespace walkman
         public:
             internal_yarp_command_sender_interface(const std::string& module_prefix,const std::string& port_suffix)
             {
+                this->module_prefix=module_prefix;
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
+                std::string temp_o_num=temp_o;
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(1);
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(2);
+                if (yarp::os::NetworkBase::exists(temp_o_num))
+                    temp_o_num=temp_o+std::to_string(3);
                 
-                command_port.open(temp_o.c_str());
+                command_port.open(temp_o_num.c_str());
                 yarp::os::ContactStyle style;
                 style.persistent = true;
-                yarp::os::Network::connect(temp_o.c_str(),temp_i.c_str(), style);
+                yarp::os::Network::connect(temp_o_num.c_str(),temp_i.c_str(), style);
             }
             
             bool sendCommand(const std::string& cmd, int seq_num=0)
@@ -76,7 +128,9 @@ namespace walkman
             }
             
         private:
-            yarp::os::BufferedPort<yarp::os::Bottle> command_port;    
+            yarp::os::BufferedPort<yarp::os::Bottle> command_port;
+            std::string module_prefix;
+            
         };
 
         template<class command_type> class internal_yarp_command_interface
@@ -84,6 +138,7 @@ namespace walkman
         public:
             internal_yarp_command_interface(const std::string& module_prefix,const std::string& port_suffix)
             {
+                this->module_prefix=module_prefix;
                 std::string temp="/"+module_prefix+port_suffix;
                 command_port.open(temp.c_str());
             }
@@ -94,6 +149,7 @@ namespace walkman
                 int seq_num_i = -1;
                 if(bot_command != NULL) {
                     seq_num_i = bot_command->pop().asInt();
+                    std::cout<<"received message"<<seq_num_i<<std::endl;
 		    command_i.fromBottle(bot_command);
 		    cmd=command_i;
 		    seq_num=seq_num_i;
@@ -105,6 +161,8 @@ namespace walkman
         private:
             command_type command_i;
             yarp::os::BufferedPort<yarp::os::Bottle> command_port;
+            std::string module_prefix;
+            
         };
         
         template<> class internal_yarp_command_interface<std::string>
@@ -113,6 +171,7 @@ namespace walkman
             
             internal_yarp_command_interface(const std::string& module_prefix,const std::string& port_suffix)
             {
+                this->module_prefix=module_prefix;
                 command_port.open("/"+module_prefix+port_suffix);
             }
             
@@ -168,6 +227,8 @@ namespace walkman
             }
         private:
             yarp::os::BufferedPort<yarp::os::Bottle> command_port;
+            std::string module_prefix;
+            
         };
     }
 }
