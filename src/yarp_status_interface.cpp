@@ -50,13 +50,14 @@ bool yarp_status_interface::threadInit() {
     if(port_name == "") {
         assert(false && "State streaming port not specified.");
     }
+    bool result = port.open(port_name);
     if (!yarp::os::NetworkBase::isConnected("/"+module_prefix+"/status:o",port_name))
     {
         yarp::os::ContactStyle style;
         style.persistent=true;
         yarp::os::Network::connect("/"+module_prefix+"/status:o",port_name,style);
     }
-    return port.open(port_name);
+    return result;
 }
 
 void yarp_status_interface::threadRelease() {
