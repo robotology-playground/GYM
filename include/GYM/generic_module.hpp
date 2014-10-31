@@ -288,7 +288,8 @@ public:
                                                     rf( rf ),
                                                     alive( false ),
                                                     actual_num_seq( 0 ),
-                                                    actual_status()
+                                                    actual_status(),
+                                                    thread( NULL )
     {
         // check that T is a generic_thread subclass (at compile time)
         derived_constraint<T, generic_thread>();

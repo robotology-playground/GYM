@@ -51,7 +51,7 @@ include_directories(
 file(GLOB_RECURSE drc_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h)
 
 # find PCL
-find_package(PCL 1.7 REQUIRED COMPONENTS common)
+find_package(PCL 1.7 REQUIRED)
 add_definitions(${PCL_DEFINITIONS})
 include_directories(${PCL_INCLUDE_DIRS})
 
