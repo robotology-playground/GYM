@@ -25,7 +25,7 @@ void yarp_status_interface::setStatus(const std::string& new_status, const yarp:
     state = new_status;
     data = data_;
     data_set=true;
-    send();
+//     send();
 }
 
 void yarp_status_interface::setStatus(const std::string& new_status, int seq_num_i) {
@@ -33,7 +33,7 @@ void yarp_status_interface::setStatus(const std::string& new_status, int seq_num
     seq_num=seq_num_i;
     state = new_status;
     data_set=false;
-    send();
+//     send();
 }
 
 void yarp_status_interface::send() {
@@ -51,11 +51,12 @@ bool yarp_status_interface::threadInit() {
         assert(false && "State streaming port not specified.");
     }
     bool result = port.open(port_name);
-    if (!yarp::os::NetworkBase::isConnected("/"+module_prefix+"/status:o",port_name))
+    if (!yarp::os::NetworkBase::isConnected("/"+module_prefix+"/status:i",port_name))
     {
         yarp::os::ContactStyle style;
         style.persistent=true;
-        yarp::os::Network::connect("/"+module_prefix+"/status:o",port_name,style);
+        std::cout<<"connecting "<<"/"+module_prefix+"/status:i" <<" to "<<port_name <<std::endl;
+        yarp::os::Network::connect("/"+module_prefix+"/status:i",port_name,style);
     }
     return result;
 }
@@ -72,11 +73,12 @@ yarp_status_receiver_interface::yarp_status_receiver_interface(const std::string
     port_name("/"+module_prefix+"/status:i"){
     this->module_prefix=module_prefix;
     port.open(port_name);
-    if (!yarp::os::NetworkBase::isConnected("/"+module_prefix+"/status:o",port_name))
+    if (!yarp::os::NetworkBase::isConnected(port_name,"/"+module_prefix+"/status:o"))
     {
         yarp::os::ContactStyle style;
         style.persistent=true;
-        yarp::os::Network::connect("/"+module_prefix+"/status:o",port_name,style);
+        std::cout<<"connecting "<<port_name<<" to "<<"/"+module_prefix+"/status:o" <<std::endl;
+        yarp::os::Network::connect(port_name,"/"+module_prefix+"/status:o",style);
     }
 }
 
