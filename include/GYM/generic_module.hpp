@@ -494,8 +494,8 @@ public:
 		// open status interface
 		status_interface = std::make_shared<walkman::drc::yarp_status_interface>( module_prefix + "/module" ) ;
 		// status rate setted at the half of the module period
-		status_interface->setRate( module_period / 2 );
-		status_interface->start();
+                status_interface->setRate( module_period*1000.0 / 2.0 );//HACK //TODO change double to int everywhere
+                status_interface->start();
             }
             else {
                 // error on the parameters initialization
