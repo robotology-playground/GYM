@@ -15,7 +15,7 @@ class tutorial_control_thread: public generic_thread
 {
 private:   
     // left_arm chain interface
-    walkman::drc::yarp_single_chain_interface left_arm_chain_interface;
+    walkman::yarp_single_chain_interface left_arm_chain_interface;
     // joints number
     int num_joints;
     // left_arm configuration vector
@@ -25,7 +25,7 @@ private:
     // ref speed vector
     yarp::sig::Vector ref_speed_vector;
     // command interface
-    walkman::drc::yarp_command_interface command_interface;
+    walkman::yarp_command_interface command_interface;
 
     // link the tutorial optional params
     void link_tutorial_params();

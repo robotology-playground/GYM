@@ -53,7 +53,7 @@ add_dependencies( ${PROJECT_NAME} GYM )
 ## Link ##
 ##########
 
-# linking the tutorial executable against YARP,drc_shared and the tutorial lib
+# linking the tutorial executable against YARP, idynutils and the tutorial lib
 target_link_libraries( ${PROJECT_NAME} ${idynutils_LIBRARIES} GYM ${YARP_LIBRARIES} )
 
 #############

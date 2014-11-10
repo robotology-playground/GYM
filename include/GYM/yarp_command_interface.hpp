@@ -31,64 +31,38 @@
 
 namespace walkman
 {
-namespace drc
-{
-
-    
-
-template<class command_type>
-class yarp_custom_command_sender_interface:public internal_yarp_command_sender_interface<command_type>
-{
-public:
-    yarp_custom_command_sender_interface(const std::string& module_prefix):internal_yarp_command_sender_interface< command_type >(module_prefix,"/command")
+    template<class command_type>
+    class yarp_custom_command_sender_interface:public internal_yarp_command_sender_interface<command_type>
     {
-    }
-};
+    public:
+        yarp_custom_command_sender_interface(const std::string& module_prefix):internal_yarp_command_sender_interface< command_type >(module_prefix,"/command")
+        {
+        }
+    };
 
-class yarp_command_sender_interface:public yarp_custom_command_sender_interface<std::string>
-{
-public:
-    yarp_command_sender_interface(const std::string& module_prefix):yarp_custom_command_sender_interface<std::string>(module_prefix)
+    class yarp_command_sender_interface:public yarp_custom_command_sender_interface<std::string>
     {
-    }
-};
+    public:
+        yarp_command_sender_interface(const std::string& module_prefix):yarp_custom_command_sender_interface<std::string>(module_prefix)
+        {
+        }
+    };
 
-class yarp_switch_sender_interface:public internal_yarp_command_sender_interface<std::string>
-{
-public:
-    yarp_switch_sender_interface(const std::string& module_prefix):internal_yarp_command_sender_interface< std::string >(module_prefix,"/switch")
+    template<class command_type>
+    class yarp_custom_command_interface:public internal_yarp_command_interface<command_type>
     {
-        
-    }
-};    
+    public:
+        yarp_custom_command_interface(const std::string& module_prefix):internal_yarp_command_interface< command_type >(module_prefix,"/command:i")
+        {
+        }
+    };
 
-template<class command_type>
-class yarp_custom_command_interface:public internal_yarp_command_interface<command_type>
-{
-public:
-    yarp_custom_command_interface(const std::string& module_prefix):internal_yarp_command_interface< command_type >(module_prefix,"/command:i")
+    class yarp_command_interface:public yarp_custom_command_interface<std::string>
     {
-    }
-};
-
-class yarp_command_interface:public yarp_custom_command_interface<std::string>
-{
-public:
-    yarp_command_interface(const std::string& module_prefix):yarp_custom_command_interface<std::string>(module_prefix)
-    {
-    }
-};
-
-class yarp_switch_interface:public internal_yarp_command_interface<std::string>
-{
-public:
-    yarp_switch_interface(const std::string& module_prefix):internal_yarp_command_interface< std::string >(module_prefix,"/switch:i")
-    {
-
-    }
-};
-
-
-}
+    public:
+        yarp_command_interface(const std::string& module_prefix):yarp_custom_command_interface<std::string>(module_prefix)
+        {
+        }
+    };
 }
 #endif

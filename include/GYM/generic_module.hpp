@@ -26,6 +26,8 @@
 #include <GYM/yarp_status_interface.h>
 // command interface
 #include <GYM/yarp_command_interface.hpp>
+// switch interface
+#include <GYM/yarp_switch_interface.hpp>
 // param helper
 #include <paramHelp/paramHelperServer.h>
 #include <paramHelp/paramProxyBasic.h>
@@ -94,9 +96,9 @@ private:
     // name of the robot
     std::string robot_name;
     // switch interface of the module
-    std::shared_ptr<walkman::drc::yarp_switch_interface> switch_interface;
+    std::shared_ptr<walkman::yarp_switch_interface> switch_interface;
     // status interface of the module
-    std::shared_ptr<walkman::drc::yarp_status_interface> status_interface;
+    std::shared_ptr<walkman::yarp_status_interface> status_interface;
     std::string actual_status;
     int actual_num_seq;
     // resource finder
@@ -508,9 +510,9 @@ public:
                 // open the rpc port for the param helper
                 rpc_port.open( "/" + module_prefix +"/rpc" );
 		// open standard switch interface
-		switch_interface = std::make_shared<walkman::drc::yarp_switch_interface>( module_prefix ) ;
+        switch_interface = std::make_shared<walkman::yarp_switch_interface>( module_prefix ) ;
 		// open status interface
-		status_interface = std::make_shared<walkman::drc::yarp_status_interface>( module_prefix + "/module" ) ;
+        status_interface = std::make_shared<walkman::yarp_status_interface>( module_prefix + "/module" ) ;
 		// status rate setted at the half of the module period
                 status_interface->setRate( module_period*1000.0 / 2.0 );//HACK //TODO change double to int everywhere
                 status_interface->start();
