@@ -33,60 +33,55 @@
 
 namespace walkman
 {
-namespace drc
-{
+    class yarp_status_interface : public yarp::os::RateThread{
 
-class yarp_status_interface : public yarp::os::RateThread{
-    
-    yarp::os::BufferedPort<yarp::os::Bottle> port;
-    std::mutex mtx; 
-    std::string port_name;
-    yarp::os::ConstString status_i;
-    bool data_set;
-    int seq_num;
-    void send();
-    std::string module_prefix;
-    
-    
-public:
-    std::string state;            // String description of the module's state (quite common)
-    yarp::os::Bottle data;        // Optional additional data
-        
-        yarp_status_interface(const std::string& module_prefix, const int& period_ms_= 500, 
-                            const std::string& init_state_ = "initializing");
-    
-    void setPort(const std::string& port_name_);
-    
-    void run();
-    
-    void setStatus(const std::string& new_status, const yarp::os::Bottle& data, int seq_num=0);
-
-    void setStatus(const std::string& new_status, int seq_num=0);
-    
-    bool threadInit();
-    
-    void threadRelease();
-    
-}; 
+        yarp::os::BufferedPort<yarp::os::Bottle> port;
+        std::mutex mtx;
+        std::string port_name;
+        yarp::os::ConstString status_i;
+        bool data_set;
+        int seq_num;
+        void send();
+        std::string module_prefix;
 
 
-class yarp_status_receiver_interface{
+    public:
+        std::string state;            // String description of the module's state (quite common)
+        yarp::os::Bottle data;        // Optional additional data
 
-    yarp::os::BufferedPort<yarp::os::Bottle> port;
-    std::mutex mtx; 
-    std::string port_name;
-    std::string module_prefix;
-    
-public:
-    yarp_status_receiver_interface(const std::string& module_prefix);
-    
-    void setPort(const std::string& port_name_);
-    
-    bool getStatus(std::string& status, int& seq_num, yarp::os::Bottle* bottle_out=0);
-    
-}; 
+            yarp_status_interface(const std::string& module_prefix, const int& period_ms_= 500,
+                                const std::string& init_state_ = "initializing");
+
+        void setPort(const std::string& port_name_);
+
+        void run();
+
+        void setStatus(const std::string& new_status, const yarp::os::Bottle& data, int seq_num=0);
+
+        void setStatus(const std::string& new_status, int seq_num=0);
+
+        bool threadInit();
+
+        void threadRelease();
+
+    };
 
 
-}
+    class yarp_status_receiver_interface{
+
+        yarp::os::BufferedPort<yarp::os::Bottle> port;
+        std::mutex mtx;
+        std::string port_name;
+        std::string module_prefix;
+
+    public:
+        yarp_status_receiver_interface(const std::string& module_prefix);
+
+        void setPort(const std::string& port_name_);
+
+        bool getStatus(std::string& status, int& seq_num, yarp::os::Bottle* bottle_out=0);
+
+    };
+
 }
 #endif

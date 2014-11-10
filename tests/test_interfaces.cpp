@@ -1,8 +1,9 @@
 #include <yarp/os/Network.h>
-#include <drc_shared/yarp_command_interface.hpp>
-#include <drc_shared/yarp_status_interface.h>
+#include <GYM/yarp_command_interface.hpp>
+#include <GYM/yarp_switch_interface.hpp>
+#include <GYM/yarp_status_interface.h>
 
-using namespace walkman::drc;
+using namespace walkman;
 
 int main(int argc, char* argv[])
 {

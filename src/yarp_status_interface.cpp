@@ -26,7 +26,7 @@
 #include <iostream>
 #include <assert.h>
 
-using namespace walkman::drc;
+using namespace walkman;
 
 yarp_status_interface::yarp_status_interface(const std::string& module_prefix, const int& period_ms_,
         const std::string& init_state_) :
