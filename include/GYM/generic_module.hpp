@@ -411,7 +411,6 @@ public:
      */
     void parameterUpdated(const paramHelp::ParamProxyInterface *pd) final
     {
-	std::cout << "Updating a parameter in param helper" << std::endl;
         // call custom parameterUpdated
         custom_parameterUpdated( pd );
     }
