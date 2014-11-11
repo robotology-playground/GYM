@@ -71,12 +71,12 @@ bool yarp_status_interface::threadInit() {
         assert(false && "State streaming port not specified.");
     }
     bool result = port.open(port_name);
-    if (!yarp::os::NetworkBase::isConnected("/"+module_prefix+"/status:i",port_name))
+    if (!yarp::os::NetworkBase::isConnected(port_name,"/"+module_prefix+"/status:i"))
     {
         yarp::os::ContactStyle style;
         style.persistent=true;
-        std::cout<<"connecting "<<"/"+module_prefix+"/status:i" <<" to "<<port_name <<std::endl;
-        yarp::os::Network::connect("/"+module_prefix+"/status:i",port_name,style);
+        std::cout<<"connecting "<<port_name <<" to " <<"/"+module_prefix+"/status:i"<<std::endl;
+        yarp::os::Network::connect(port_name,"/"+module_prefix+"/status:i",style);
     }
     return result;
 }
@@ -93,28 +93,27 @@ yarp_status_receiver_interface::yarp_status_receiver_interface(const std::string
     port_name("/"+module_prefix+"/status:i"){
     this->module_prefix=module_prefix;
     port.open(port_name);
-    if (!yarp::os::NetworkBase::isConnected(port_name,"/"+module_prefix+"/status:o"))
+    if (!yarp::os::NetworkBase::isConnected("/"+module_prefix+"/status:o",port_name))
     {
         yarp::os::ContactStyle style;
         style.persistent=true;
-        std::cout<<"connecting "<<port_name<<" to "<<"/"+module_prefix+"/status:o" <<std::endl;
-        yarp::os::Network::connect(port_name,"/"+module_prefix+"/status:o",style);
+        std::cout<<"connecting "<<"/"+module_prefix+"/status:o"<<" to "<<port_name<<std::endl;
+        yarp::os::Network::connect("/"+module_prefix+"/status:o",port_name,style);
     }
 }
 
 bool yarp_status_receiver_interface::getStatus(std::string& status, int& seq_num, yarp::os::Bottle* bottle_out) {
     yarp::os::Bottle* bot_status = port.read(false);
 
-    int seq_num_i = -1;
     bottle_out=0;
     if(bot_status != NULL) {
-        seq_num_i = bot_status->get(0).asInt();
+        seq_num = bot_status->get(0).asInt();
         status = bot_status->get(1).asString();
         if (bot_status->size()>2)
             bottle_out=bot_status;
         return true;
     }
-    seq_num=seq_num_i;
+    seq_num=-1;
     status="no new status received";
     return false;
 }
