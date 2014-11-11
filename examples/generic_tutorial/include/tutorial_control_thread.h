@@ -15,7 +15,7 @@ class tutorial_control_thread: public generic_thread
 {
 private:   
     // left_arm chain interface
-    walkman::yarp_single_chain_interface left_arm_chain_interface;
+    walkman::drc::yarp_single_chain_interface left_arm_chain_interface;
     // joints number
     int num_joints;
     // left_arm configuration vector

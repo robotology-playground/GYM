@@ -47,13 +47,12 @@ INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${paramHelp_INCLUDE_DIRS})
 # for every file in sot_INCLUDES CMake already sets the property HEADER_FILE_ONLY
 file(GLOB_RECURSE GYM_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include/GYM" *.h*)
 
-ADD_LIBRARY(GYM SHARED  src/generic.cpp
-                        src/yarp_status_interface.cpp
+ADD_LIBRARY(GYM SHARED  src/yarp_status_interface.cpp
                         ${GYM_INCLUDES})
 
 TARGET_LINK_LIBRARIES(GYM   ${YARP_LIBRARIES} 
 			    ${paramHelp_LIBRARIES}
-				  )
+		     )
 
 ########################################################################
 # use YCM to export GYM so taht it can be found using find_package #
