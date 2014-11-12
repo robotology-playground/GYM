@@ -8,9 +8,6 @@
 // define representing the period of the module in [milliseconds]
 #define MODULE_PERIOD_MILLISEC 1000
 
-/*
- * THIS IS QUITE A STANDARD MAIN TO RUN A GENERIC MODULE!!!
- */
 int main(int argc, char* argv[])
 {
     // yarp network declaration and check
@@ -25,6 +22,7 @@ int main(int argc, char* argv[])
     // create the resource finder for the tutorial module
     yarp::os::ResourceFinder tutorial_rf;
     tutorial_rf.setVerbose(true);
+    tutorial_rf.setDefaultConfigFile( "tutorial_configuration.ini" );
     tutorial_rf.setDefaultContext( "generic_tutorial" );  
     tutorial_rf.configure(argc, argv);
 

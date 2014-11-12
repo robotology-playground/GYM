@@ -10,7 +10,7 @@ tutorial_control_thread::tutorial_control_thread(   std::string module_prefix,
                                                                                                             num_joints( left_arm_chain_interface.getNumberOfJoints() ),
                                                                                                             left_arm_configuration( num_joints ),
                                                                                                             ref_speed_vector( num_joints ),
-                                                                                                            command_interface( get_robot_name() + "/" + module_prefix ),
+                                                                                                            command_interface( module_prefix ),
                                                                                                             generic_thread( module_prefix, rf, ph )
 {
     // position mode on left arm chain interface
@@ -37,18 +37,18 @@ bool tutorial_control_thread::custom_init()
 
 void tutorial_control_thread::run()
 {   
+    std::string cmd = command_interface.getCommand();
     // when we receive the string "test_cmd" through the command interface, go to the desired configuration
-    if( command_interface.getCommand() == "test_cmd" ) {
+    if( cmd == "test_cmd" ) {
         
         // set the ref speed for all the joints
         left_arm_chain_interface.setReferenceSpeed( max_vel );
         
         // position move to desired configuration
         left_arm_chain_interface.move(left_arm_configuration);
-        
-        // notify to the user
-        //std::cout << "Going to desired configuration ... " << std::endl;
-        
+    }
+    else if( cmd != "" ) {
+	std::cout << cmd <<  " -> command not valid" << std::endl;
     }
 }
 
