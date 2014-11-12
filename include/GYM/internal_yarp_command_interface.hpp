@@ -165,7 +165,7 @@ namespace walkman
             int seq_num_i = -1;
             if(bot_command != NULL) {
                 seq_num_i = bot_command->pop().asInt();
-                std::cout<<"received message"<<seq_num_i<<std::endl;
+                std::cout<<"received message with seq_num "<<seq_num_i<<std::endl;
         command_i.fromBottle(bot_command);
         cmd=command_i;
         seq_num=seq_num_i;
