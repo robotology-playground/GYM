@@ -76,7 +76,7 @@ struct derived_constraint {
 
 
 /**
- * @brief generic module template with a standard switch interface, a standard status interface and a generic thread. 
+ * @brief generic module template with a switch interface, a status interface and a paramHelper a generic thread. 
  * The template type T must be a subclass of a generic_thread.
  * 
  * @author Luca Muratore (luca.muratore@iit.it)
@@ -108,6 +108,8 @@ private:
     yarp::os::Port rpc_port;
     std::vector<paramHelp::ParamProxyInterface *> actual_ph_parameters;
     std::vector<paramHelp::CommandDescription> actual_ph_commands;
+    bool to_configure;
+    bool to_open_port;
     
     
     /**
@@ -310,7 +312,9 @@ public:
                                                     alive( false ),
                                                     actual_num_seq( 0 ),
                                                     actual_status(),
-                                                    thread( NULL )
+                                                    thread( NULL ),
+                                                    to_configure( true ),
+                                                    to_open_port( true )
     {
         // check that T is a generic_thread subclass (at compile time)
         derived_constraint<T, generic_thread>();
@@ -468,6 +472,31 @@ public:
         // call custom commandReceived
         custom_commandReceived( cd, params, reply );
     }
+    
+    /**
+     * @brief open the generic YARP module standard ports: a switch interface, a status interface and a rpc for the paramHelper
+     * 
+     * @return void
+     */
+    void open_gym_ports() 
+    {
+	if( to_open_port ) {
+	    std::cout << "Opening the generic ports ..." << std::endl;
+	    // update the flag : open port only at the first configure
+	    to_open_port = false;
+	    // attach to the module the rpc port for the param helper
+	    attach( rpc_port );
+	    // open the rpc port for the param helper
+	    rpc_port.open( "/" + module_prefix +"/rpc" );
+	    // open standard switch interface
+	    switch_interface = std::make_shared<walkman::yarp_switch_interface>( module_prefix ) ;
+	    // open status interface
+	    status_interface = std::make_shared<walkman::yarp_status_interface>( module_prefix + "/module" ) ;
+	    // status rate setted at the half of the module period
+	    status_interface->setRate( module_period*1000.0 / 2.0 );//HACK //TODO change double to int everywhere
+	    status_interface->start();
+	}
+    }
 
     /**
      * @brief generic module standard configure: take the rf and initialize the mandatory params. 
@@ -478,69 +507,70 @@ public:
      **/
     bool configure( yarp::os::ResourceFinder &rf ) final
     {
-        // set the name of the module
-        setName( module_prefix.c_str() );
-       
-        // get the data for the param heleper using copy constructor to avoid problems on delete
-        actual_ph_parameters =  get_ph_parameters();
-        actual_ph_commands =  get_ph_commands();
-        // switch to standard c const vector
-        const paramHelp::ParamProxyInterface * const* ph_parameters =  &actual_ph_parameters[0];
-        const paramHelp::CommandDescription* ph_commands =  &actual_ph_commands[0];
-        // create the param helper
-        ph = std::make_shared<paramHelp::ParamHelperServer>( ph_parameters, actual_ph_parameters.size(),
-                                                            ph_commands , actual_ph_commands.size() );
-        // link parameters
-        ph_link_parameters();
-	// register callbacks for param value changed
-	ph_param_value_changed_callback();
-        // register commands
-        ph_register_commands();
-        
-        // check the rf and the mandatory params initialization
-        if( initializeMandatoryParam() ) {
-            
-            // param helper params init
-            yarp::os::Bottle init_msg;
-            if( ph->initializeParams( rf, init_msg ) ) {
-                // print the bottle
-                paramHelp::printBottle( init_msg );
-                // attach to the module the rpc port for the param helper
-                attach( rpc_port );
-                // open the rpc port for the param helper
-                rpc_port.open( "/" + module_prefix +"/rpc" );
-		// open standard switch interface
-        switch_interface = std::make_shared<walkman::yarp_switch_interface>( module_prefix ) ;
-		// open status interface
-        status_interface = std::make_shared<walkman::yarp_status_interface>( module_prefix + "/module" ) ;
-		// status rate setted at the half of the module period
-                status_interface->setRate( module_period*1000.0 / 2.0 );//HACK //TODO change double to int everywhere
-                status_interface->start();
-            }
-            else {
-                // error on the parameters initialization
-                std::cerr << "Error while initializing param helper parameters from resource finder: further details below" << std::endl;
-                // print the bottle
-                paramHelp::printBottle( init_msg );
-                return false;
-            }
-            
-            // call the init on the param helper
-            if( ph->init( module_prefix ) ) {
-                //call the custom configure
-                return custom_configure( rf );
-            }
-            else {
-                // error on the param helper initialization
-                std::cerr << "Error while opening the param helper YARP info and stream ports." << std::endl;
-                return false;
-            }
-        }
-        else {
-	    // error on param helper mandatory params
-	    std::cerr << "Error while initializing param helper mandatory param" << std::endl;
-            return false;
-        }
+	if( to_configure ) {
+	    std::cout << "Configuring the module ..." << std::endl;
+	    // update the flag
+	    to_configure = false;
+	    
+	    // set the name of the module
+	    setName( module_prefix.c_str() );
+	
+	    // get the data for the param heleper using copy constructor to avoid problems on delete
+	    actual_ph_parameters =  get_ph_parameters();
+	    actual_ph_commands =  get_ph_commands();
+	    // switch to standard c const vector
+	    const paramHelp::ParamProxyInterface * const* ph_parameters =  &actual_ph_parameters[0];
+	    const paramHelp::CommandDescription* ph_commands =  &actual_ph_commands[0];
+	    // create the param helper
+	    ph = std::make_shared<paramHelp::ParamHelperServer>( ph_parameters, actual_ph_parameters.size(),
+								ph_commands , actual_ph_commands.size() );
+	    // link parameters
+	    ph_link_parameters();
+	    // register callbacks for param value changed
+	    ph_param_value_changed_callback();
+	    // register commands
+	    ph_register_commands();
+	    
+	    // check the rf and the mandatory params initialization
+	    if( initializeMandatoryParam() ) {
+		
+		// param helper params init
+		yarp::os::Bottle init_msg;
+		if( ph->initializeParams( rf, init_msg ) ) {
+		    // print the bottle
+		    paramHelp::printBottle( init_msg );
+		    // opend standard module port
+		    open_gym_ports();
+		}
+		else {
+		    // error on the parameters initialization
+		    std::cerr << "Error while initializing param helper parameters from resource finder: further details below" << std::endl;
+		    // print the bottle
+		    paramHelp::printBottle( init_msg );
+		    return false;
+		}
+		
+		// call the init on the param helper
+		if( ph->init( module_prefix ) ) {
+		    //call the custom configure
+		    return custom_configure( rf );
+		}
+		else {
+		    // error on the param helper initialization
+		    std::cerr << "Error while opening the param helper YARP info and stream ports." << std::endl;
+		    return false;
+		}
+	    }
+	    else {
+		// error on param helper mandatory params
+		std::cerr << "Error while initializing param helper mandatory param" << std::endl;
+		return false;
+	    }
+	}
+	else {
+	    std::cout << "Module already configured. Skipping configure ..." << std::endl;
+	    return true;
+	}
     }
     
     /**
@@ -560,10 +590,11 @@ public:
      **/
     bool start()
     {
-        //call configure - if it has success create the thread and make it start
-//         if( configure( rf ) ) {
+        if( configure( rf ) ) {
+	
             // create the thread 
             thread = new T( module_prefix, rf, ph );
+	    
             // start the thread 
             if( !thread->start() )
             {   // error starting the thread
@@ -571,13 +602,15 @@ public:
                 thread = NULL;
                 return false;
             }
-            alive = true;
-            return true;
-//         }
-//         // configure error
-//         else {
-//             return false;
-//         }
+
+            // thread correctly started
+	    alive = true;
+	    return true;
+	}
+	// configure error
+	else {
+	    return false;
+	}
     }
 
     /**
@@ -596,6 +629,7 @@ public:
             thread = NULL;
         } 
         alive = false;
+	to_configure = true;
         return custom_close_ret;
     }
     
