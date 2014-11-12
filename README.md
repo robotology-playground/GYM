@@ -9,13 +9,13 @@ It is developed under the European Project WALK-MAN: http://www.walk-man.eu/.
 Generic Yarp Module Tutorial
 ============================
 
-A simple tutorial about the use of a generic software architecture to implement a task that will be run on a robot.
+This is a simple tutorial about the use of a generic software architecture to implement a task that will be run on a robot.
 
 Using the Generic YARP Module ( **GYM** from here on ) makes it standard and simpler writing a task; it also provides some built-in features that will be described in this tutorial.
 
 Goal
---------------
-The goal of this tutorial is to understand how to use the **GYM**. For further details about the implementation of the **GYM** please refer to "Doxygen Documentation".
+----
+The goal of this tutorial is to understand how to use the **GYM**. For further details about the implementation of the **GYM** please refer to the Doxygen documentation.
 
 Prerequisites
 --------------
@@ -28,7 +28,7 @@ GYM design
 --------------
 **GYM** is composed by two main components:
 
-* a template class called **generic_module** derived from YARP _RFModule_ that represents a low-rate thread used to supervise the life cycle of the internal control thread(described below). 
+* a template class called **generic_module** derived from YARP _RFModule_ that represents a low-rate thread used to supervise the life cycle of an internal control thread(described below). 
 * a class called **generic_thread** derived from YARP _RateThread_ that represents an high-rate control thread.
 
 In order to use the **GYM** you simply have to inherit from this two classes: in the image below you can see an overview of the **GYM** design when we define two classes called **MyModule** and **MyThread** respectively derived from **generic_module** (with MyThread class as template argument) and **generic_thread**.    
@@ -67,7 +67,7 @@ You have to specify two mandatory parameters for the Resource Finder(as command 
 GYM example
 ===========
 Here you can find a simple example about the usage of the GYM.  
-**GYM** is inside **drc_shared** [repo](https://gitlab.robotology.eu/walkman-drc/drc_shared/tree/master/include/drc_shared) and the tutorial example is in **coman\_yarp\_apps** repo inside **generic_tutorial** [sub-directory](https://gitlab.robotology.eu/walkman-drc/coman_yarp_apps/tree/master/generic_tutorial).
+**GYM** is a github repo, [repo](https://github.com/robotology-playground/GYM), and the tutorial example is inside the **examples** folder.
 
 Run the example
 ---------------
@@ -78,7 +78,7 @@ Open 7 terminal:
 On terminal # 1 start YARP name server  
 ~$ **yarpserver --write**  
 
-On terminal # 2 start gazebo (or comanInterface if you are on the real coman robot)  
+On terminal # 2 start gazebo  
 ~$ **gazebo**  
 Inside gazebo load the coman model you prefer.
 
@@ -89,10 +89,10 @@ As you can see from the output of this terminal, the generic\_tutorial founds th
 Now the module is started, but for the moment the internal thread does not exist. We can monitor the life-cycle of the internal thread through the module status port:
 
 on terminal # 4 monitor the status of the module in terms of the life-cycle of its internal control thread  
-~$ **yarp read ... /coman/generic_tutorial/module/status:o**
+~$ **yarp read ... /generic_tutorial/module/status:o**
 
 On terminal # 5 start the internal control thread through the switch interface  
-~$ **yarp write ... /coman/generic_tutorial/switch:i**  
+~$ **yarp write ... /generic_tutorial/switch:i**  
 ~$ >> **start**
 
 Give the start command to the module make the internal thread starts, you can verify it looking at the output of terminal # 4.
@@ -101,7 +101,7 @@ From terminal # 3 output you can see the initialization values of our parameters
 The robot left arm is still idle: to make it move to the initial configuration give the "test\_cmd"command to the generic_module command port:  
 
 on  terminal # 6  
-~$ **yarp write ... /coman/generic_tutorial/command:i**  
+~$ **yarp write ... /generic_tutorial/command:i**  
 ~$ >> **test\_cmd**
 
 The robot left arm is moving to the configuration specified in the .ini file.
@@ -110,7 +110,7 @@ How to modify the position of the left arm joints in real-time?
 Let's use the Param Helper through the rpc port of the module:
 
 on terminal # 7
-~$ **yarp rpc /coman/generic_tutorial/rpc**  
+~$ **yarp rpc /generic_tutorial/rpc**  
 ~$ >> **help**  
 ..... help output .....  
 ~$ >> **get left_arm**  
