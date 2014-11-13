@@ -98,6 +98,8 @@ install_basic_package_files(GYM     VARS_PREFIX ${VARS_PREFIX}
 
 include(AddUninstallTarget)
 
+INSTALL(PROGRAMS scripts/generate_GYM_skeleton.sh DESTINATION bin)
+
 add_subdirectory(doc)
 add_subdirectory(examples)
 
