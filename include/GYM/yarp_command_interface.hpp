@@ -48,15 +48,6 @@ public:
     }
 };
 
-class yarp_switch_sender_interface:public internal_yarp_command_sender_interface<std::string>
-{
-public:
-    yarp_switch_sender_interface(const std::string& module_prefix):internal_yarp_command_sender_interface< std::string >(module_prefix,"/switch")
-    {
-        
-    }
-};    
-
 template<class command_type>
 class yarp_custom_command_interface:public internal_yarp_command_interface<command_type>
 {
@@ -73,17 +64,5 @@ public:
     {
     }
 };
-
-class yarp_switch_interface:public internal_yarp_command_interface<std::string>
-{
-public:
-    yarp_switch_interface(const std::string& module_prefix):internal_yarp_command_interface< std::string >(module_prefix,"/switch:i")
-    {
-
-    }
-};
-
-
-}
 }
 #endif
