@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2014 Walkman
+ * Author: Mirko Ferrati
+ * email:  mirko.ferrati@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>
+*/
+
 #ifndef _INTERNAL_YARP_COMMAND_INTERFACE_H_
 #define _INTERNAL_YARP_COMMAND_INTERFACE_H_
 #include <yarp/os/all.h>
@@ -12,9 +31,6 @@
 
 namespace walkman
 {
-    namespace drc
-    {
-        
         template<class command_type> class internal_yarp_command_sender_interface
         {
         public:
@@ -149,7 +165,7 @@ namespace walkman
                 int seq_num_i = -1;
                 if(bot_command != NULL) {
                     seq_num_i = bot_command->pop().asInt();
-                    std::cout<<"received message"<<seq_num_i<<std::endl;
+                std::cout<<"received message with seq_num "<<seq_num_i<<std::endl;
 		    command_i.fromBottle(bot_command);
 		    cmd=command_i;
 		    seq_num=seq_num_i;
@@ -231,18 +247,5 @@ namespace walkman
             
         };
     }
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif

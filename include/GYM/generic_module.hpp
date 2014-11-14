@@ -1,12 +1,33 @@
+/*
+ * Copyright (C) 2014 Walkman
+ * Author: Luca Muratore
+ * email:  luca.muratore@iit.it
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>
+*/
+
 #ifndef GENERIC_MODULE_HPP
 #define GENERIC_MODULE_HPP
 
 // YARP
 #include <yarp/os/all.h>
 // status interface
-#include <drc_shared/yarp_status_interface.h>
+#include <GYM/yarp_status_interface.h>
 // command interface
-#include <drc_shared/yarp_command_interface.hpp>
+#include <GYM/yarp_command_interface.hpp>
+// switch interface
+#include <GYM/yarp_switch_interface.hpp>
 // param helper
 #include <paramHelp/paramHelperServer.h>
 #include <paramHelp/paramProxyBasic.h>
@@ -14,7 +35,7 @@
 // C++11 smart pointers
 #include <memory>
 //generic thread
-#include "generic_thread.hpp"
+#include <GYM/generic_thread.hpp>
 
 // param helper define for params
 #define PARAM_ID_DT 1000
@@ -55,7 +76,7 @@ struct derived_constraint {
 
 
 /**
- * @brief generic module template with a standard switch interface, a standard status interface and a generic thread. 
+ * @brief generic module template with a switch interface, a status interface and a paramHelper a generic thread. 
  * The template type T must be a subclass of a generic_thread.
  * 
  * @author Luca Muratore (luca.muratore@iit.it)
@@ -75,9 +96,9 @@ private:
     // name of the robot
     std::string robot_name;
     // switch interface of the module
-    std::shared_ptr<walkman::drc::yarp_switch_interface> switch_interface;
+    std::shared_ptr<walkman::yarp_switch_interface> switch_interface;
     // status interface of the module
-    std::shared_ptr<walkman::drc::yarp_status_interface> status_interface;
+    std::shared_ptr<walkman::yarp_status_interface> status_interface;
     std::string actual_status;
     int actual_num_seq;
     // resource finder
@@ -87,6 +108,8 @@ private:
     yarp::os::Port rpc_port;
     std::vector<paramHelp::ParamProxyInterface *> actual_ph_parameters;
     std::vector<paramHelp::CommandDescription> actual_ph_commands;
+    bool to_configure;
+    bool to_open_port;
     
     
     /**
@@ -289,7 +312,9 @@ public:
                                                     alive( false ),
                                                     actual_num_seq( 0 ),
                                                     actual_status(),
-                                                    thread( NULL )
+                                                    thread( NULL ),
+                                                    to_configure( true ),
+                                                    to_open_port( true )
     {
         // check that T is a generic_thread subclass (at compile time)
         derived_constraint<T, generic_thread>();
@@ -392,7 +417,6 @@ public:
      */
     void parameterUpdated(const paramHelp::ParamProxyInterface *pd) final
     {
-	std::cout << "Updating a parameter in param helper" << std::endl;
         // call custom parameterUpdated
         custom_parameterUpdated( pd );
     }
@@ -450,6 +474,31 @@ public:
     }
 
     /**
+     * @brief open the generic YARP module standard ports: a switch interface, a status interface and a rpc for the paramHelper
+     * 
+     * @return void
+     */
+    void open_gym_ports() 
+    {
+	if( to_open_port ) {
+	    std::cout << "Opening the generic ports ..." << std::endl;
+	    // update the flag : open port only at the first configure
+	    to_open_port = false;
+	    // attach to the module the rpc port for the param helper
+	    attach( rpc_port );
+	    // open the rpc port for the param helper
+	    rpc_port.open( "/" + module_prefix +"/rpc" );
+	    // open standard switch interface
+	    switch_interface = std::make_shared<walkman::yarp_switch_interface>( module_prefix ) ;
+	    // open status interface
+	    status_interface = std::make_shared<walkman::yarp_status_interface>( module_prefix + "/module" ) ;
+	    // status rate setted at the half of the module period
+	    status_interface->setRate( module_period*1000.0 / 2.0 );//HACK //TODO change double to int everywhere
+	    status_interface->start();
+	}
+    }
+
+    /**
      * @brief generic module standard configure: take the rf and initialize the mandatory params. 
      *        It calls the custom_configure() at the end of the function. 
      * @param rf resource finder.
@@ -458,6 +507,11 @@ public:
      **/
     bool configure( yarp::os::ResourceFinder &rf ) final
     {
+	if( to_configure ) {
+	    std::cout << "Configuring the module ..." << std::endl;
+	    // update the flag
+	    to_configure = false;
+	    
         // set the name of the module
         setName( module_prefix.c_str() );
        
@@ -485,17 +539,8 @@ public:
             if( ph->initializeParams( rf, init_msg ) ) {
                 // print the bottle
                 paramHelp::printBottle( init_msg );
-                // attach to the module the rpc port for the param helper
-                attach( rpc_port );
-                // open the rpc port for the param helper
-                rpc_port.open( "/" + module_prefix +"/rpc" );
-		// open standard switch interface
-		switch_interface = std::make_shared<walkman::drc::yarp_switch_interface>( module_prefix ) ;
-		// open status interface
-		status_interface = std::make_shared<walkman::drc::yarp_status_interface>( module_prefix + "/module" ) ;
-		// status rate setted at the half of the module period
-                status_interface->setRate( module_period*1000.0 / 2.0 );//HACK //TODO change double to int everywhere
-                status_interface->start();
+		    // opend standard module port
+		    open_gym_ports();
             }
             else {
                 // error on the parameters initialization
@@ -522,6 +567,11 @@ public:
             return false;
         }
     }
+	else {
+	    std::cout << "Module already configured. Skipping configure ..." << std::endl;
+	    return true;
+	}
+    }
     
     /**
      * @brief custom configure function: could be redefined in subclasses
@@ -540,8 +590,8 @@ public:
      **/
     bool start()
     {
-        //call configure - if it has success create the thread and make it start
-//         if( configure( rf ) ) {
+        if( configure( rf ) ) {
+	
             // create the thread 
             thread = new T( module_prefix, rf, ph );
             // start the thread 
@@ -551,13 +601,15 @@ public:
                 thread = NULL;
                 return false;
             }
+
+            // thread correctly started
             alive = true;
             return true;
-//         }
-//         // configure error
-//         else {
-//             return false;
-//         }
+	}
+	// configure error
+	else {
+	    return false;
+	}
     }
 
     /**
@@ -576,6 +628,7 @@ public:
             thread = NULL;
         } 
         alive = false;
+	to_configure = true;
         return custom_close_ret;
     }
     

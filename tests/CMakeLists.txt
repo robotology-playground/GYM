@@ -1,9 +1,17 @@
-cmake_minimum_required(VERSION 2.8.7)
+# Copyright: (C) 2014 Walkman Consortium
+# Authors: Luca Muratore
+# CopyPolicy: Released under the terms of the GNU LGPL v3.0.
+
+cmake_minimum_required(VERSION 2.8.12)
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0003 OLD)
+    cmake_policy(SET CMP0005 NEW)
+    cmake_policy(SET CMP0017 NEW)
+endif(COMMAND cmake_policy)
 include(ExternalProject)
 
 set(PROJECTNAME tests)
 project(${PROJECTNAME})
-set(TESTSDIR ${CMAKE_BINARY_DIR}/devel/lib/drc_shared)
 
 # compite GTest
 set(gTestSource "/usr/src/gtest")
@@ -20,45 +28,15 @@ link_directories(${GTEST_LIB_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} )
 enable_testing()
 
-if( YCM_EP_DEVEL_MODE_drc_shared)
-    add_custom_target(  drc_shared_test ALL
+if( YCM_EP_DEVEL_MODE_GYM)
+    add_custom_target(  GYM_test ALL
                         COMMAND ${CMAKE_CTEST_COMMAND}
-                        DEPENDS drc_utils idynutils drc_shared tests_utils
-                                CartesianUtilsTest
-                                iDynUtilsTest
-                                testUtilsTest
+                        DEPENDS GYM
                                 interfacesTest )
 endif()
 
-SET(interfacesTestLibs drc_shared ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+SET(interfacesTestLibs GYM ${YARP_LIBRARIES} ${ACE_LIBRARIES})
 ADD_EXECUTABLE(interfacesTest test_interfaces.cpp)
 TARGET_LINK_LIBRARIES(interfacesTest ${interfacesTestLibs})
-add_dependencies(interfacesTest GTest-ext drc_shared)
-#add_test(test_drc_shared    ${TESTSDIR}/interfacesTest)
-
-SET(CartesianUtilsTestLibs idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
-                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
-                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
-                                ${YARP_LIBRARIES} icubmod ${GTEST_BOTH_LIBRARIES})
-ADD_EXECUTABLE(CartesianUtilsTest     cartesian_utils_tests.cpp)
-TARGET_LINK_LIBRARIES(CartesianUtilsTest ${CartesianUtilsTestLibs})
-add_dependencies(CartesianUtilsTest GTest-ext idynutils)
-add_test(cartesian_utils_tests ${TESTSDIR}/CartesianUtilsTest)
-
-SET(iDynUtilsTestLibs tests_utils idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
-                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
-                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
-                                ${YARP_LIBRARIES} icubmod ${GTEST_BOTH_LIBRARIES})
-ADD_EXECUTABLE(iDynUtilsTest    idyn_utils_tests.cpp)
-TARGET_LINK_LIBRARIES(iDynUtilsTest ${iDynUtilsTestLibs})
-add_dependencies(iDynUtilsTest GTest-ext idynutils)
-add_test(idyn_utils_tests ${TESTSDIR}/iDynUtilsTest)
-
-SET(testUtilsTestLibs tests_utils idynutils ${moveit_core_LIBRARIES} ${srdfdom_LIBRARIES}
-                                ${kdl_codyco_LIBRARIES} ${iDynTree_LIBRARIES}
-                                ${orocos_kdl_LIBRARIES} ${urdf_LIBRARIES} ${kdl_parser_LIBRARIES}
-                                ${YARP_LIBRARIES} icubmod ${GTEST_BOTH_LIBRARIES})
-ADD_EXECUTABLE(testUtilsTest     tests_utils_tests.cpp)
-TARGET_LINK_LIBRARIES(testUtilsTest ${testUtilsTestLibs})
-add_dependencies(testUtilsTest GTest-ext idynutils)
-add_test(tests_utils_tests ${TESTSDIR}/testUtilsTest)
+add_dependencies(interfacesTest GTest-ext GYM)
+#add_test(NAME test_interfaces COMMAND interfacesTest)

@@ -1,0 +1,14 @@
+/**
+\defgroup walkman_GYM Generic Yarp Module
+\ingroup walkman_libraries
+
+\author Luca Muratore <luca.muraqtore@iit.it>, Mirko Ferrati <mirko.ferrati@gmail.com>
+\copyright Released under the terms of the GNU GPL v2.0
+
+\section walkman_GYM_introduction Description
+
+A component model to easily develop software modules for robotics leveraging the YARP ecosystem (http://github.com/robotology/YARP).
+ 
+GYM is developed under the European Project WALK-MAN: http://www.walk-man.eu/.
+An online verion of this documentation can be found at https://wiki.icub.org/walkman/dox/html/group__walkman__libraries.html
+*/

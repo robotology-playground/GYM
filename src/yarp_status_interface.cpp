@@ -1,4 +1,24 @@
-#include <drc_shared/yarp_status_interface.h>
+/*
+ * Copyright (C) 2014 Walkman
+ * Author: Mirko Ferrati
+ * email:  mirko.ferrati@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>
+*/
+
+
+#include <GYM/yarp_status_interface.h>
 
 #include <iterator>
 #include <algorithm>
@@ -6,7 +26,7 @@
 #include <iostream>
 #include <assert.h>
 
-using namespace walkman::drc;
+using namespace walkman;
 
 yarp_status_interface::yarp_status_interface(const std::string& module_prefix, const int& period_ms_,
         const std::string& init_state_) :

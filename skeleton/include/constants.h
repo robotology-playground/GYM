@@ -1,0 +1,4 @@
+#ifndef _MODULE_PREFIX__CONSTANTS_H_
+#define _MODULE_PREFIX__CONSTANTS_H_
+
+#endif
