@@ -134,7 +134,7 @@ public:
     /**
      * @brief getter method for the period of the thread
      * 
-     * @return the period of the thread
+     * @return the period of the thread in [milliseconds]
      */
     double get_thread_period()
     {

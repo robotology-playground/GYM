@@ -679,7 +679,7 @@ public:
     /**
      * @brief getter for the period of the thread.
      *
-     * @return the period of the thread.
+     * @return the period of the thread in [milliseconds].
      **/
     double getThreadPeriod() 
     {
