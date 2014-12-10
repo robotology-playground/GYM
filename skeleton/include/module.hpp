@@ -7,7 +7,7 @@
 #include "_MODULE_PREFIX__constants.h"
 
 /**
- * @brief _MODULE_PREFIX module derived from generic_module
+ * @brief _MODULE_PREFIX_ module derived from generic_module
  * 
  * @author 
  */
