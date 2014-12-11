@@ -23,3 +23,4 @@ else()
 endif()
 
 add_subdirectory(generic_tutorial)
+add_subdirectory(control_tutorial)
