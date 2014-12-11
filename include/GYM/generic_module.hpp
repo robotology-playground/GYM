@@ -113,35 +113,6 @@ private:
     
     
     /**
-     * @brief create the standard parameters for the param helper:
-     *            - thread_period : an int that represents the period of the controlled thread in millisec
-     *            - robot_name : a string that represents the name of the robot
-     * 
-     * @return a std::vector with the ParamProxyInterface* of the standard parameters
-     */
-    std::vector<paramHelp::ParamProxyInterface *> create_standard_ph_parameters()
-    {
-        std::vector<paramHelp::ParamProxyInterface *> standard_ph_parameters;
-        // insert thread_period param
-        standard_ph_parameters.push_back( new paramHelp::ParamProxyBasic<int>(  "thread_period", 
-                                                                                PARAM_ID_DT, 
-                                                                                PARAM_SIZE_DT, 
-                                                                                paramHelp::ParamLowerBound<int>(1), 
-                                                                                paramHelp::PARAM_CONFIG, 
-                                                                                NULL, 
-                                                                                "control thread period [milliseconds]" ) );
-        
-        // insert robot name param
-        standard_ph_parameters.push_back( new paramHelp::ParamProxyBasic<std::string>(  "robot_name", 
-                                                                                        PARAM_ID_ROBOT, 
-                                                                                        PARAM_SIZE_ROBOT,  
-                                                                                        paramHelp::PARAM_CONFIG, 
-                                                                                        NULL, 
-                                                                                        "robot name" ) );
-        return standard_ph_parameters;
-    }
-    
-    /**
      * @brief create the standard commands for the param helper:
      *            - help : get instructions about how to communicate with this module
      *            - save_params <file_name>:  Save the actual configuration parameters to file, inside the resource finder context folder
@@ -224,6 +195,49 @@ private:
         custom_ph_register_commands();
     }
 
+    
+
+    /**
+     * @brief utility function for checking a suffix in a std::string - TODO: to move outside this class
+     * 
+     * @return true if str ends with the specified suffix
+     */
+    bool has_suffix(const std::string &str, const std::string &suffix)
+    {
+        return  str.size() >= suffix.size() &&
+                str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+    }
+
+protected:
+    /**
+     * @brief create the standard parameters for the param helper:
+     *            - thread_period : an int that represents the period of the controlled thread in millisec
+     *            - robot_name : a string that represents the name of the robot
+     * 
+     * @return a std::vector with the ParamProxyInterface* of the standard parameters
+     */
+    virtual std::vector<paramHelp::ParamProxyInterface *> create_standard_ph_parameters()
+    {
+        std::vector<paramHelp::ParamProxyInterface *> standard_ph_parameters;
+        // insert thread_period param
+        standard_ph_parameters.push_back( new paramHelp::ParamProxyBasic<int>(  "thread_period", 
+                                                                                PARAM_ID_DT, 
+                                                                                PARAM_SIZE_DT, 
+                                                                                paramHelp::ParamLowerBound<int>(1), 
+                                                                                paramHelp::PARAM_CONFIG, 
+                                                                                NULL, 
+                                                                                "control thread period [milliseconds]" ) );
+        
+        // insert robot name param
+        standard_ph_parameters.push_back( new paramHelp::ParamProxyBasic<std::string>(  "robot_name", 
+                                                                                        PARAM_ID_ROBOT, 
+                                                                                        PARAM_SIZE_ROBOT,  
+                                                                                        paramHelp::PARAM_CONFIG, 
+                                                                                        NULL, 
+                                                                                        "robot name" ) );
+        return standard_ph_parameters;
+    }
+    
     /**
      * @brief initializer for the mandatory params that are: 
      *        - the thread period expressed in millisec (int).
@@ -231,7 +245,7 @@ private:
      * 
      * @return true if the initialization has success. False otherwise.
      */
-    bool initializeMandatoryParam()
+    virtual bool initializeMandatoryParam()
     {
         yarp::os::Value actual_find_value;
         //thread period in millisec as an int
@@ -266,23 +280,12 @@ private:
         }
         else {
             //robot name does not exist
-	    std::cerr << "Error: robot_name pram NOT found" << std::endl;
+	    std::cerr << "Error: robot_name param NOT found" << std::endl;
             return false;
         }
         
         //intizializaions had success
         return true;
-    }
-
-    /**
-     * @brief utility function for checking a suffix in a std::string - TODO: to move outside this class
-     * 
-     * @return true if str ends with the specified suffix
-     */
-    bool has_suffix(const std::string &str, const std::string &suffix)
-    {
-        return  str.size() >= suffix.size() &&
-                str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
     }
     
 public:
@@ -792,6 +795,16 @@ public:
         }
         // true if the module is not quitted
         return true;
+    }
+    
+    /**
+     * @brief getter method for the ResourceFinder
+     * 
+     * @return the resource finder
+     */
+    yarp::os::ResourceFinder get_resource_finder()
+    {
+        return rf;
     }
     
     /**
