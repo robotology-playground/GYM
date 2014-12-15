@@ -41,6 +41,12 @@ class control_thread : public generic_thread
 {
 protected:
     RobotUtils robot;
+    iDynUtils& model;
+    // urdf path
+    std::string urdf_path;
+    // srdf path
+    std::string srdf_path;
+    
 
 public: 
     
@@ -57,8 +63,32 @@ public:
 										rf.find("robot_name").asString(), 
 										rf.find("urdf_path").asString(),
 										rf.find("srdf_path").asString() ),
+										
+									model( robot.idynutils ),
+									urdf_path( rf.find("urdf_path").asString() ),
+									srdf_path( rf.find("srdf_path").asString() ),
 									generic_thread( module_prefix, rf, ph )
     {    
+    }
+    
+    /**
+     * @brief getter method for the urdf path
+     * 
+     * @return the urdf path
+     */
+    std::string get_urdf_path() 
+    {
+	return urdf_path;
+    }
+    
+    /**
+     * @brief getter method for the srdf path
+     * 
+     * @return the srdf path
+     */
+    std::string get_srdf_path() 
+    {
+	return srdf_path;
     }
     
   
