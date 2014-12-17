@@ -28,7 +28,7 @@ file(GLOB conf conf/*.ini)
 # directory name matches what is provided as "default context" in code
 yarp_install(FILES ${conf} DESTINATION ${YARP_CONTEXTS_INSTALL_DIR}/_MODULE_PREFIX_)
 
-add_custom_target(  copy_conf_files_to_build ALL
+add_custom_target(  _MODULE_PREFIX__conf_files_to_build ALL
 		    COMMAND ${CMAKE_COMMAND} -E copy_directory
 		    "${PROJECT_SOURCE_DIR}/app/conf"
 		    "${CMAKE_BINARY_DIR}/"
