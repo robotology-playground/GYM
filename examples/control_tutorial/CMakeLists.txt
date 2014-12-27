@@ -41,7 +41,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(idynutils REQUIRED)
-FIND_PACKAGE(GYM REQUIRED)
 FIND_PACKAGE(paramHelp REQUIRED)
 find_package(iDynTree REQUIRED)
 
@@ -49,7 +48,6 @@ find_package(iDynTree REQUIRED)
 INCLUDE_DIRECTORIES(include 
 		    ${YARP_INCLUDE_DIRS} 
 		    ${idynutils_INCLUDE_DIRS}
-		    ${GYM_INCLUDE_DIRS}
 		    )
 		    
 ADD_EXECUTABLE(${PROJECT_NAME} src/control_tutorial_main.cpp 
@@ -59,8 +57,9 @@ ADD_EXECUTABLE(${PROJECT_NAME} src/control_tutorial_main.cpp
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${iDynTree_LIBRARIES}
                                       ${YARP_LIBRARIES}
 				      ${idynutils_LIBRARIES}
-				      ${GYM_LIBRARIES}
+				      ${paramHelp_LIBRARIES}
 				      ${iDynTree_LIBRARIES}
+				      GYM
 				      )
 
 add_subdirectory(app)
