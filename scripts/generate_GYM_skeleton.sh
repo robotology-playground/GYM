@@ -5,7 +5,7 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-# SVN hack thanks to gituhb - TODO: change this
+# SVN hack thanks to gituhb (from master) - TODO: change this
 svn export https://github.com/robotology-playground/GYM/trunk/skeleton/ > /dev/null
 mv skeleton/* . && rm -rf skeleton
 

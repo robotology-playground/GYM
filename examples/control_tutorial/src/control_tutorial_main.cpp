@@ -28,12 +28,12 @@ int main(int argc, char* argv[])
     rf.configure(argc, argv);
     // create my module
     control_tutorial_module control_tutorial_mod = control_tutorial_module( argc, argv, "control_tutorial", MODULE_PERIOD, rf );
-        
-    // yarp network deinitialization
-    yarp.fini();
     
     // run the module
     control_tutorial_mod.runModule( rf );
+    
+    // yarp network deinitialization
+    yarp.fini();
     
     exit(EXIT_SUCCESS);
 }

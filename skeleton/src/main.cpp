@@ -28,12 +28,12 @@ int main(int argc, char* argv[])
     rf.configure(argc, argv);
     // create my module
     _MODULE_PREFIX__module _MODULE_PREFIX__mod = _MODULE_PREFIX__module( argc, argv, "_MODULE_PREFIX_", MODULE_PERIOD, rf );
-        
-    // yarp network deinitialization
-    yarp.fini();
     
     // run the module
     _MODULE_PREFIX__mod.runModule( rf );
+    
+    // yarp network deinitialization
+    yarp.fini();
     
     exit(EXIT_SUCCESS);
 }

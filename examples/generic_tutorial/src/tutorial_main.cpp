@@ -32,12 +32,12 @@ int main(int argc, char* argv[])
                                                     "generic_tutorial", 
                                                     MODULE_PERIOD_MILLISEC, 
                                                     tutorial_rf );
-        
-    // yarp network deinitialization
-    yarp.fini();
     
     // run the module
     tutorial_mod.runModule( tutorial_rf );
+    
+    // yarp network deinitialization
+    yarp.fini();
     
     exit(EXIT_SUCCESS);
 }
