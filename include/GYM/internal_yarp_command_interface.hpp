@@ -97,6 +97,7 @@ namespace walkman
                 b.append(cmd.toBottle());
 		b.addInt(seq_num);
                 command_port.write();
+                return true;
             }
         private:
             yarp::os::BufferedPort<yarp::os::Bottle> command_port;
@@ -133,6 +134,7 @@ namespace walkman
                 b.addString(cmd);
 		b.addInt(seq_num);
                 command_port.write();
+                return true;
             }
             
             bool sendCommand(int cmd, int seq_num=0)
@@ -141,6 +143,7 @@ namespace walkman
                 b.clear();
                 b.addInt(cmd);
                 command_port.write();
+                return true;
             }
             
         private:
@@ -159,9 +162,9 @@ namespace walkman
                 command_port.open(temp.c_str());
             }
             
-            bool getCommand ( command_type& cmd, int& seq_num )
+            bool getCommand ( command_type& cmd, int& seq_num ,bool should_wait=false)
             {
-                yarp::os::Bottle* bot_command = command_port.read(false);
+                yarp::os::Bottle* bot_command = command_port.read(should_wait);
                 int seq_num_i = -1;
                 if(bot_command != NULL) {
                     seq_num_i = bot_command->pop().asInt();
@@ -191,9 +194,9 @@ namespace walkman
                 command_port.open("/"+module_prefix+port_suffix);
             }
             
-            bool getCommand(int& command)
+            bool getCommand(int& command,bool should_wait=false)
             {
-                yarp::os::Bottle* bot_command = command_port.read(false);
+                yarp::os::Bottle* bot_command = command_port.read(should_wait);
                 if(bot_command != NULL) {
                     command= bot_command->get(0).asInt();
                     return true;
@@ -201,9 +204,9 @@ namespace walkman
                 return false;
             }
             
-            std::string getCommand()
+            std::string getCommand(bool should_wait=false)
             {
-                yarp::os::Bottle* bot_command = command_port.read(false);
+                yarp::os::Bottle* bot_command = command_port.read(should_wait);
                 if(bot_command != NULL) {
                     std::string command_i= bot_command->get(0).asString();
                     return command_i;
@@ -211,9 +214,9 @@ namespace walkman
                 return "";
             }
             
-            bool getCommand (std::string & cmd)
+            bool getCommand (std::string & cmd,bool should_wait=false)
             {
-                yarp::os::Bottle* bot_command = command_port.read(false);
+                yarp::os::Bottle* bot_command = command_port.read(should_wait);
                 
                 if(bot_command != NULL) {
                     cmd = bot_command->get(0).asString();
@@ -226,9 +229,9 @@ namespace walkman
                 }
             }
             
-            bool getCommand ( std::string& cmd, int& seq_num )
+            bool getCommand ( std::string& cmd, int& seq_num ,bool should_wait=false)
             {
-                yarp::os::Bottle* bot_command = command_port.read(false);
+                yarp::os::Bottle* bot_command = command_port.read(should_wait);
                 if(bot_command != NULL) {
                     seq_num = bot_command->pop().asInt();
                     cmd= bot_command->get(0).asString();
