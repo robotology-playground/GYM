@@ -6,8 +6,8 @@ if [ $# -ne 1 ]; then
 fi
 
 # SVN hack thanks to gituhb (from master) - TODO: change this
-svn export https://github.com/robotology-playground/GYM/trunk/skeleton/ > /dev/null
-mv skeleton/* . && rm -rf skeleton
+svn export https://github.com/robotology-playground/GYM/trunk/skeleton/generic > /dev/null
+mv skeleton/generic/* . && rm -rf skeleton
 
 # find and replace 
 find . -maxdepth 3 -type f -not -path '*/\.*' -exec sed -i -e "s/_MODULE_PREFIX_/$1/g" {} \;
