@@ -6,7 +6,7 @@
 _MODULE_PREFIX__thread::_MODULE_PREFIX__thread( std::string module_prefix, 
                              			yarp::os::ResourceFinder rf, 
                              			std::shared_ptr< paramHelp::ParamHelperServer > ph) :
-    generic_thread( module_prefix, rf, ph )
+    control_thread( module_prefix, rf, ph )
 {
     // TODO: skeleton constructor
 }

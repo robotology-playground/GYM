@@ -1,28 +1,28 @@
 #ifndef _MODULE_PREFIX__MODULE_HPP_
 #define _MODULE_PREFIX__MODULE_HPP_
 
-#include <GYM/generic_module.hpp>
+#include <GYM/control_module.hpp>
 
 #include "_MODULE_PREFIX__thread.h"
 #include "_MODULE_PREFIX__constants.h"
 
 /**
- * @brief _MODULE_PREFIX_ module derived from generic_module
+ * @brief _MODULE_PREFIX_ module derived from control_module
  * 
  * @author 
  */
-class _MODULE_PREFIX__module : public generic_module<_MODULE_PREFIX__thread> {
+class _MODULE_PREFIX__module : public control_module<_MODULE_PREFIX__thread> {
 public:
     
     /**
      * @brief constructor: do nothing but construct the superclass
      * 
      */
-    _MODULE_PREFIX__module(   int argc, 
+    _MODULE_PREFIX__module(    int argc, 
                                char* argv[],
                                std::string module_prefix, 
                                int module_period, 
-                               yarp::os::ResourceFinder rf ) : generic_module<_MODULE_PREFIX__thread>(  argc, 
+                               yarp::os::ResourceFinder rf ) : control_module<_MODULE_PREFIX__thread>(  argc, 
                                                                                             		argv, 
                                                                                             		module_prefix, 
                                                                                             		module_period,

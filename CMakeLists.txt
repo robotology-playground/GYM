@@ -100,7 +100,12 @@ install_basic_package_files(GYM     VARS_PREFIX ${VARS_PREFIX}
 
 include(AddUninstallTarget)
 
-INSTALL(PROGRAMS scripts/generate_GYM_skeleton.sh DESTINATION bin)
+# remove old installed script
+file(REMOVE ${CMAKE_INSTALL_PREFIX}/bin/generate_GYM_skeleton.sh)
+
+# install new scripts
+INSTALL(PROGRAMS scripts/generate_GYM_generic_skeleton.sh DESTINATION bin)
+INSTALL(PROGRAMS scripts/generate_GYM_control_skeleton.sh DESTINATION bin)
 
 add_subdirectory(doc)
 #add_subdirectory(examples)

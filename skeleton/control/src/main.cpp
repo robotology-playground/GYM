@@ -1,5 +1,5 @@
 #include <yarp/os/all.h>
-#include <GYM/generic_module.hpp>
+#include <GYM/control_module.hpp>
 #include <cstdlib>
 
 #include "_MODULE_PREFIX__module.hpp"

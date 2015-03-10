@@ -1,13 +1,13 @@
 #ifndef _MODULE_PREFIX__THREAD_H_
 #define _MODULE_PREFIX__THREAD_H_
 
-#include <GYM/generic_thread.hpp>
+#include <GYM/control_thread.hpp>
 
 /**
  * @brief _MODULE_PREFIX_ control thread
  * 
  **/
-class _MODULE_PREFIX__thread : public generic_thread
+class _MODULE_PREFIX__thread : public control_thread
 {
 private:   
     
