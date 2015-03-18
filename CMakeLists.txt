@@ -41,6 +41,7 @@ endif()
 
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(paramHelp REQUIRED)
+FIND_PACKAGE(Boost 1.54.0 COMPONENTS system thread)
 # to avoid header not found when using idynutils 
 FIND_PACKAGE(Eigen3 REQUIRED)
 
@@ -54,6 +55,7 @@ ADD_LIBRARY(GYM SHARED  src/yarp_status_interface.cpp
 
 TARGET_LINK_LIBRARIES(GYM   ${YARP_LIBRARIES} 
 			    ${paramHelp_LIBRARIES}
+			    ${Boost_LIBRARIES}
 		     )
 
 ########################################################################
