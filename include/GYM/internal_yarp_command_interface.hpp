@@ -27,6 +27,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
 #include <mutex>
+#include <unistd.h>
 
 
 namespace walkman
@@ -162,13 +163,34 @@ namespace walkman
                 command_port.open(temp.c_str());
             }
             
-            bool getCommand ( command_type& cmd, int& seq_num ,bool should_wait=false)
+            /**
+             * should_wait false -> async read
+             * should_wait true, timeout <0 -> blocking read
+             * should_wait true, timeout > 0 -> blocking read until timeout 
+             */
+            bool getCommand ( command_type& cmd, int& seq_num ,bool should_wait=false, double timeout=-1)
             {
-                yarp::os::Bottle* bot_command = command_port.read(should_wait);
+                yarp::os::Bottle* bot_command=NULL;
+                if (should_wait && timeout>0)
+                {
+                    int counter=0;
+                    while(counter<11)
+                    {
+                        bot_command = command_port.read(false);
+                        if (bot_command!=NULL) break;
+                        usleep(timeout/10.0*1000.0*1000.0);
+                        counter++;
+                    }
+                    if (counter==11) return false;
+                }
+                else 
+                {
+                    bot_command = command_port.read(should_wait);
+                }
                 int seq_num_i = -1;
                 if(bot_command != NULL) {
                     seq_num_i = bot_command->pop().asInt();
-                std::cout<<"received message with seq_num "<<seq_num_i<<std::endl;
+                    std::cout<<"received message with seq_num "<<seq_num_i<<std::endl;
 		    command_i.fromBottle(bot_command);
 		    cmd=command_i;
 		    seq_num=seq_num_i;
