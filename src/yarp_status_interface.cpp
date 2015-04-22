@@ -60,7 +60,8 @@ void yarp_status_interface::send() {
     yarp::os::Bottle& b = port.prepare();
     b.clear();
     b.addInt(seq_num);
-    b.addString(state);
+    if(state.length()==1) b.addInt((int)state[0]);
+    else b.addString(state);
     if (data_set)
         b.append(data);
     port.write();
@@ -108,7 +109,8 @@ bool yarp_status_receiver_interface::getStatus(std::string& status, int& seq_num
     bottle_out=0;
     if(bot_status != NULL) {
         seq_num = bot_status->get(0).asInt();
-        status = bot_status->get(1).asString();
+	if(bot_status->get(1).isInt()) status = std::string(1,(char)(bot_status->get(1).asInt()));
+        else status = bot_status->get(1).asString();
         if (bot_status->size()>2)
             bottle_out=bot_status;
         return true;
