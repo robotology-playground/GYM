@@ -510,6 +510,9 @@ public:
      **/
     bool configure( yarp::os::ResourceFinder &rf ) final
     {
+        // TBD to be removed: will be handled by YARP
+        yarp::os::Time::isValid();
+        
 	if( to_configure ) {
 	    std::cout << "Configuring the module ..." << std::endl;
 	    // update the flag
