@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     rf.setVerbose(true);
     // set control_tutorial_initial_config.ini as default
     // to specify another config file, run with this arg: --from your_config_file.ini 
-    rf.setDefaultConfigFile( "control_tutorial_initial_config.ini" ); 
+    rf.setDefaultConfigFile( "robotology_control_tutorial_initial_config.ini" ); 
     rf.setDefaultContext( "control_tutorial" );  
     rf.configure(argc, argv);
     // create my module
