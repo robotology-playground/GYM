@@ -110,10 +110,10 @@ INSTALL(PROGRAMS scripts/generate_GYM_generic_skeleton.sh DESTINATION bin)
 INSTALL(PROGRAMS scripts/generate_GYM_control_skeleton.sh DESTINATION bin)
 
 add_subdirectory(doc)
-#add_subdirectory(examples)
+add_subdirectory(examples)
 
 #######################
 # Add Testing target  #
 #######################
 enable_testing()
-#add_subdirectory(tests)
+add_subdirectory(tests)
