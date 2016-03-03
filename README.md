@@ -160,22 +160,22 @@ generate_GYM_generic_skeleton.sh GYM_skeleton_example
 
 You will see this in your GYM_skeleton_example folder:
 
-.
-├── app
-│   ├── CMakeLists.txt
-│   └── conf
-│       └── GYM_skeleton_example_initial_config.ini
-├── CMakeLists.txt
-├── include
-│   ├── GYM_skeleton_example_constants.h
-│   ├── GYM_skeleton_example_module.hpp
-│   └── GYM_skeleton_example_thread.h
-├── README.md
-└── src
-    ├── GYM_skeleton_example_main.cpp
-    └── GYM_skeleton_example_thread.cpp
+.  
+├── app  
+│   ├── CMakeLists.txt  
+│   └── conf  
+│       └── GYM_skeleton_example_initial_config.ini  
+├── CMakeLists.txt  
+├── include  
+│   ├── GYM_skeleton_example_constants.h  
+│   ├── GYM_skeleton_example_module.hpp  
+│   └── GYM_skeleton_example_thread.h  
+├── README.md  
+└── src  
+    ├── GYM_skeleton_example_main.cpp  
+    └── GYM_skeleton_example_thread.cpp  
 
-4 directories, 9 files
+4 directories, 9 files  
 
 
 The skeleton is ready for you, you just need to modify the empty GYM_skeleton_example_thread.cpp functions like: custom_init() , run() , etc.
