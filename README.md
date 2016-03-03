@@ -22,14 +22,16 @@ Prerequisites
 The **GYM** tutorial assumes some basic knowledge about:
 
 * C++: the **GYM** supports only C++ language and it uses some features (like smart pointers ) from C++ 11.   
-* YARP (Yet Another Robot Platform): **GYM** is a piece of software built upon YARP. It can be seen as a "middleware" between YARP and the code of your task.
+* YARP (Yet Another Robot Platform): **GYM** is a piece of software built upon YARP. It can be seen as a "middleware" between YARP and the code of your module.
 
 GYM design
 --------------
 **GYM** is composed by two main components:
 
-* a template class called **generic_module** derived from YARP _RFModule_ that represents a low-rate thread used to supervise the life cycle of an internal control thread(described below). 
-* a class called **generic_thread** derived from YARP _RateThread_ that represents an high-rate control thread.
+* a template class called **generic_module** / **control_module** derived from YARP _RFModule_ that represents a low-rate thread used to supervise the life cycle of an internal control thread(described below). 
+* a class called **generic_thread** / **control_thread** derived from YARP _RateThread_ that represents an high-rate control thread.
+
+The generic module/thread are used for general purpose modules (e.g. perception modules); the control module/thread instead are used to control the robot.
 
 In order to use the **GYM** you simply have to inherit from this two classes: in the image below you can see an overview of the **GYM** design when we define two classes called **MyModule** and **MyThread** respectively derived from **generic_module** (with MyThread class as template argument) and **generic_thread**.    
 
@@ -49,7 +51,7 @@ As you can see **MyModule** inherits from **generic_module** a YARP [Resource Fi
   * **help**: help.
   * **save_params**: saves the actual parameters configuration.
   * **set/get [param]**: online sets/gets the value of the parameter passed as argument.
-  * **[custom commands]**: possibly you could define your own Param Helper commands in **MyModule**.
+  * **[custom commands]**: possibly you can define your own Param Helper commands in **MyModule**.
 
 GYM constraints
 ---------------
@@ -57,7 +59,7 @@ GYM constraints
 When using the **GYM** there are few constraints to keep in mind:
  
 * **Constraint # 1**
-Only **generic_thread** derived classes could be passed as a template argument of a **generic_module**.   
+Only **generic_thread** / **control_thread** derived classes can be passed as a template argument of a **generic_module** / **control_module**.   
 
 * **Constraint # 2**
 You have to specify two mandatory parameters for the Resource Finder(as command line args or inside the .ini configuration file):
@@ -136,4 +138,47 @@ If you want now you can repeat the test starting the generic\_tutorial with this
 Installation
 ------------
 
-To Install the Generic Module Architecture library, it is recommended to use the robotology superbuild http://www.github.com/robotology-playground/robotology-superbuild
+To Install the Generic YARP Module library, it is recommended to use the robotology superbuild http://www.github.com/robotology-playground/robotology-superbuild
+
+
+Generate a GYM skeleton
+-----------------------
+
+GYM will install two bash scripts that can generate a GYM skeleton for a generic or control module/thread:
+
+* generate_GYM_generic_skeleton.sh <module_prefix> : will generate a skeleton for the generic module/thread.
+* generate_GYM_control_skeleton.sh <module_prefix> : will generate a skeleton for the control module/thread.
+
+This is an example on how to generate the generic GYM skeleton:
+
+
+```bash
+mkdir GYM_skeleton_example
+cd GYM_skeleton_example
+generate_GYM_generic_skeleton.sh GYM_skeleton_example 
+```
+
+You will see this in your GYM_skeleton_example folder:
+
+.
+├── app
+│   ├── CMakeLists.txt
+│   └── conf
+│       └── GYM_skeleton_example_initial_config.ini
+├── CMakeLists.txt
+├── include
+│   ├── GYM_skeleton_example_constants.h
+│   ├── GYM_skeleton_example_module.hpp
+│   └── GYM_skeleton_example_thread.h
+├── README.md
+└── src
+    ├── GYM_skeleton_example_main.cpp
+    └── GYM_skeleton_example_thread.cpp
+
+4 directories, 9 files
+
+
+The skeleton is ready for you, you just need to modify the empty GYM_skeleton_example_thread.cpp functions like: custom_init() , run() , etc.
+
+
+
