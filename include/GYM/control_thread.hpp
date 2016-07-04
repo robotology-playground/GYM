@@ -106,7 +106,7 @@ public:
 
         double L = linear_path->PathLength();
         double max_vel = (3.*L)/(2.*trj_time);
-        double max_acc = (9.*L)/(2*trj_time*trj_time);
+        double max_acc = (9.*L)/(2.*trj_time*trj_time);
 
         return initLinearTrj(start, end, max_vel, max_acc);
     }
