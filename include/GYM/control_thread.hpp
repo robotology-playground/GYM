@@ -284,6 +284,15 @@ public:
         return _time >= trj->Duration();
     }
 
+    /**
+     * @brief isStarted
+     * @return true if the trajectory is playing
+     */
+    bool isStarted()
+    {
+        return _time > 0.0;
+    }
+
     boost::shared_ptr<KDL::Trajectory_Composite> trj;
 
 private:
