@@ -129,13 +129,12 @@ public:
         trj.reset();
         _time = 0.0;
 
-        boost::shared_ptr<KDL::Path_RoundedComposite> roundedcomposite_path;
-        roundedcomposite_path.reset(new KDL::Path_RoundedComposite(
+        _roundedcomposite_path.reset(new KDL::Path_RoundedComposite(
                                         radius,_eq_radius,new KDL::RotationalInterpolation_SingleAxis()));
         for(unsigned int i = 0; i < way_points.size(); ++i)
         {
             try {
-                roundedcomposite_path->Add(way_points[i]);
+                _roundedcomposite_path->Add(way_points[i]);
 
             } catch (int e) {
                 switch (e) {
@@ -163,23 +162,21 @@ public:
                 return false;
             }
         }
-        roundedcomposite_path->Finish();
+        _roundedcomposite_path->Finish();
 
-        boost::shared_ptr<KDL::VelocityProfile> velocity_profile;
-        velocity_profile.reset(new KDL::VelocityProfile_Trap(max_vel, max_acc));
-        velocity_profile->SetProfile(0, roundedcomposite_path->PathLength());
+        _velocity_profile.reset(new KDL::VelocityProfile_Trap(max_vel, max_acc));
+        _velocity_profile->SetProfile(0, _roundedcomposite_path->PathLength());
 
-        double L = roundedcomposite_path->PathLength();
+        double L = _roundedcomposite_path->PathLength();
         if(L <= (max_vel*max_vel)/max_acc){
             std::cout<<"Too fast trajectory, no Coast phase exists!"<<std::endl;
             return false;
         }
 
-        boost::shared_ptr<KDL::Trajectory_Segment> trj_seg;
-        trj_seg.reset(new KDL::Trajectory_Segment(roundedcomposite_path.get(), velocity_profile.get()));
+        _trj_seg.reset(new KDL::Trajectory_Segment(_roundedcomposite_path.get(), _velocity_profile.get()));
 
         trj.reset(new KDL::Trajectory_Composite());
-        trj->Add(trj_seg.get());
+        trj->Add(_trj_seg.get());
         return true;
     }
 
@@ -196,24 +193,21 @@ public:
         trj.reset();
         _time = 0.0;
 
-        boost::shared_ptr<KDL::Path_Line> linear_path;
-        linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
+        _linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
 
-        boost::shared_ptr<KDL::VelocityProfile> velocity_profile;
-        velocity_profile.reset(new KDL::VelocityProfile_Trap(max_vel, max_acc));
-        velocity_profile->SetProfile(0, linear_path->PathLength());
+        _velocity_profile.reset(new KDL::VelocityProfile_Trap(max_vel, max_acc));
+        _velocity_profile->SetProfile(0, _linear_path->PathLength());
 
-        double L = linear_path->PathLength();
+        double L = _linear_path->PathLength();
         if(L <= (max_vel*max_vel)/max_acc){
             std::cout<<"Too fast trajectory, no Coast phase exists!"<<std::endl;
             return false;
         }
 
-        boost::shared_ptr<KDL::Trajectory_Segment> trj_seg;
-        trj_seg.reset(new KDL::Trajectory_Segment(linear_path.get(), velocity_profile.get()));
+        _trj_seg.reset(new KDL::Trajectory_Segment(_linear_path.get(), _velocity_profile.get()));
 
         trj.reset(new KDL::Trajectory_Composite());
-        trj->Add(trj_seg.get());
+        trj->Add(_trj_seg.get());
         return true;
     }
 
@@ -296,6 +290,10 @@ private:
     double _time;
     double _dt;
     double _eq_radius;
+    boost::shared_ptr<KDL::VelocityProfile> _velocity_profile;
+    boost::shared_ptr<KDL::Path_RoundedComposite> _roundedcomposite_path;
+    boost::shared_ptr<KDL::Path_Line> _linear_path;
+    boost::shared_ptr<KDL::Trajectory_Segment> _trj_seg;
 
 
 };
