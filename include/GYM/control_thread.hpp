@@ -147,6 +147,11 @@ public:
         return trj->Duration();
     }
 
+    bool isFinished()
+    {
+        return _time >= trj->Duration();
+    }
+
     boost::shared_ptr<KDL::Trajectory> trj;
 
 private:
