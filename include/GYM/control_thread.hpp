@@ -56,8 +56,132 @@ class trj_interface
 public:
     trj_interface(const double dt):
         _dt(0.0),
-        _time(0.0)
+        _time(0.0),
+        _eq_radius(0.01)
     {}
+
+    /**
+     * @brief initRoundedCompositeTrj initialize a trajectory with a path, composed of
+     * way-points with rounded corners. Here we assume that bang phases and coast phases have the same duration
+     * @param radius of the rounding circles
+     * @param way_points vector of frames representing the waypoints
+     * @param trj_time total time of the trj
+     * @return false if an exceotion is thrown during the path generation or if a coast phase does not exist
+     */
+    bool initRoundedCompositeTrj(const double radius, const std::vector<KDL::Frame>& way_points,
+                                 const double trj_time)
+    {
+        boost::shared_ptr<KDL::Path_RoundedComposite> roundedcomposite_path;
+        roundedcomposite_path.reset(new KDL::Path_RoundedComposite(
+                                        radius,_eq_radius,new KDL::RotationalInterpolation_SingleAxis()));
+        for(unsigned int i = 0; i < way_points.size(); ++i)
+        {
+            try {
+                roundedcomposite_path->Add(way_points[i]);
+
+            } catch (int e) {
+                switch (e) {
+                case 3101:
+                    std::cout<<"The eq. radius <= 0"<<std::endl;
+                    break;
+                case 3102:
+                    std::cout<<"First segment in a rounding has zero length"<<std::endl;
+                    break;
+                case 3103:
+                    std::cout<<"Second segment in a rounding has zero length"<<std::endl;
+                    break;
+                case 3104:
+                    std::cout<<"Angle between the first and the second segment is close to M_PI. Meaning that the segments are on top of each other"<<std::endl;
+                    break;
+                case 3105:
+                    std::cout<<"Distance needed for the rounding is larger then the first segment"<<std::endl;
+                    break;
+                case 3106:
+                    std::cout<<"Distance needed for the rounding is larger then the second segment"<<std::endl;
+                    break;
+                default:
+                    break;
+                }
+                return false;
+            }
+        }
+        roundedcomposite_path->Finish();
+
+        double L = roundedcomposite_path->PathLength();
+        double max_vel = (3.*L)/(2.*trj_time);
+        double max_acc = (9.*L)/(2.*trj_time*trj_time);
+
+        return initRoundedCompositeTrj(radius, way_points, max_vel, max_acc);
+    }
+
+    /**
+     * @brief initRoundedCompositeTrj initialize a trajectory with a path, composed of
+     * way-points with rounded corners.
+     * @param radius of the rounding circles
+     * @param way_points vector of frames representing the waypoints
+     * @param max_vel max velocity of the trajectory
+     * @param max_acc max acceleration of the trajectory
+     * @return false if an exceotion is thrown during the path generation or if a coast phase does not exist
+     */
+    bool initRoundedCompositeTrj(const double radius, const std::vector<KDL::Frame>& way_points,
+                                 const double max_vel, const double max_acc)
+    {
+        trj.reset();
+        _time = 0.0;
+
+        boost::shared_ptr<KDL::Path_RoundedComposite> roundedcomposite_path;
+        roundedcomposite_path.reset(new KDL::Path_RoundedComposite(
+                                        radius,_eq_radius,new KDL::RotationalInterpolation_SingleAxis()));
+        for(unsigned int i = 0; i < way_points.size(); ++i)
+        {
+            try {
+                roundedcomposite_path->Add(way_points[i]);
+
+            } catch (int e) {
+                switch (e) {
+                case 3101:
+                    std::cout<<"The eq. radius <= 0"<<std::endl;
+                    break;
+                case 3102:
+                    std::cout<<"First segment in a rounding has zero length"<<std::endl;
+                    break;
+                case 3103:
+                    std::cout<<"Second segment in a rounding has zero length"<<std::endl;
+                    break;
+                case 3104:
+                    std::cout<<"Angle between the first and the second segment is close to M_PI. Meaning that the segments are on top of each other"<<std::endl;
+                    break;
+                case 3105:
+                    std::cout<<"Distance needed for the rounding is larger then the first segment"<<std::endl;
+                    break;
+                case 3106:
+                    std::cout<<"Distance needed for the rounding is larger then the second segment"<<std::endl;
+                    break;
+                default:
+                    break;
+                }
+                return false;
+            }
+        }
+        roundedcomposite_path->Finish();
+
+        boost::shared_ptr<KDL::VelocityProfile> velocity_profile;
+        velocity_profile.reset(new KDL::VelocityProfile_Trap(max_vel, max_acc));
+        velocity_profile->SetProfile(0, roundedcomposite_path->PathLength());
+
+        double L = roundedcomposite_path->PathLength();
+        if(L <= (max_vel*max_vel)/max_acc){
+            std::cout<<"Too fast trajectory, no Coast phase exists!"<<std::endl;
+            return false;
+        }
+
+        boost::shared_ptr<KDL::Trajectory_Segment> trj_seg;
+        trj_seg.reset(new KDL::Trajectory_Segment(roundedcomposite_path.get(), velocity_profile.get()));
+
+        trj.reset(new KDL::Trajectory_Composite());
+        trj->Add(trj_seg.get());
+        return true;
+    }
 
     /**
      * @brief initLinearTrj initialize a linear trajectory, with trapezoidal velocity profile, from start to end
@@ -73,8 +197,7 @@ public:
         _time = 0.0;
 
         boost::shared_ptr<KDL::Path_Line> linear_path;
-        double eqradius = 1.0; //Check this...
-        linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), eqradius));
+        linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
 
         boost::shared_ptr<KDL::VelocityProfile> velocity_profile;
         velocity_profile.reset(new KDL::VelocityProfile_Trap(max_vel, max_acc));
@@ -86,7 +209,11 @@ public:
             return false;
         }
 
-        trj.reset(new KDL::Trajectory_Segment(linear_path.get(), velocity_profile.get()));
+        boost::shared_ptr<KDL::Trajectory_Segment> trj_seg;
+        trj_seg.reset(new KDL::Trajectory_Segment(linear_path.get(), velocity_profile.get()));
+
+        trj.reset(new KDL::Trajectory_Composite());
+        trj->Add(trj_seg.get());
         return true;
     }
 
@@ -101,8 +228,7 @@ public:
     bool initLinearTrj(const KDL::Frame &start, const KDL::Frame &end, const double trj_time)
     {
         boost::shared_ptr<KDL::Path_Line> linear_path;
-        double eqradius = 1.0; //Check this...
-        linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), eqradius));
+        linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
 
         double L = linear_path->PathLength();
         double max_vel = (3.*L)/(2.*trj_time);
@@ -164,11 +290,13 @@ public:
         return _time >= trj->Duration();
     }
 
-    boost::shared_ptr<KDL::Trajectory> trj;
+    boost::shared_ptr<KDL::Trajectory_Composite> trj;
 
 private:
     double _time;
     double _dt;
+    double _eq_radius;
+
 
 };
 
