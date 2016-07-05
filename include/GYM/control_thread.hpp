@@ -137,16 +137,28 @@ public:
         _time += _dt;
     }
 
+    /**
+     * @brief getTime
+     * @return actual time of the trajectory
+     */
     double getTime()
     {
         return _time;
     }
 
+    /**
+     * @brief Duration
+     * @return return the total time of the trajectory
+     */
     double Duration()
     {
         return trj->Duration();
     }
 
+    /**
+     * @brief isFinished
+     * @return true if the internal time reached the duration of the trajectory
+     */
     bool isFinished()
     {
         return _time >= trj->Duration();
