@@ -55,7 +55,7 @@ class trj_interface
 {
 public:
     trj_interface(const double dt):
-        _dt(0.0),
+        _dt(dt),
         _time(0.0),
         _eq_radius(0.01)
     {}
