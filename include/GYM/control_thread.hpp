@@ -326,16 +326,16 @@ public:
      **/
     control_thread( std::string module_prefix, 
                     yarp::os::ResourceFinder rf, 
-		std::shared_ptr<paramHelp::ParamHelperServer> ph  ) :   robot( 	module_prefix,
-										rf.find("robot_name").asString(), 
-										rf.find("urdf_path").asString(),
-										rf.find("srdf_path").asString() ),
-										
-									model( robot.idynutils ),
-									urdf_path( rf.find("urdf_path").asString() ),
-									srdf_path( rf.find("srdf_path").asString() ),
-                                    trj( rf.find("thread_period").asDouble()/1000. ),
-									generic_thread( module_prefix, rf, ph )
+                std::shared_ptr<paramHelp::ParamHelperServer> ph  ) :   robot(  module_prefix,
+                                                                                rf.find("robot_name").asString(), 
+                                                                                rf.find("urdf_path").asString(),
+                                                                                rf.find("srdf_path").asString() ),
+                                                                                
+                                                                        model( robot.idynutils ),
+                                                                        urdf_path( rf.find("urdf_path").asString() ),
+                                                                        srdf_path( rf.find("srdf_path").asString() ),
+                                                                        trj( rf.find("thread_period").asDouble()/1000. ),
+                                                                        generic_thread( module_prefix, rf, ph )
     {    
     }
     
@@ -346,7 +346,7 @@ public:
      */
     std::string get_urdf_path() 
     {
-	return urdf_path;
+        return urdf_path;
     }
     
     /**
@@ -356,7 +356,7 @@ public:
      */
     std::string get_srdf_path() 
     {
-	return srdf_path;
+        return srdf_path;
     }
     
   
