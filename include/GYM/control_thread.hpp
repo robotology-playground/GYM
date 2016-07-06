@@ -61,15 +61,95 @@ public:
         _is_inited(false)
     {}
 
-//    bool initCircleTrj(const KDL::Frame& start_pose, const KDL::Rotation& final_rotation,
-//                       const double angle_of_rotation,
-//                       const KDL::Vector& circle_center, const KDL::Vector& plane_normal)
-//    {
-//        trj.reset();
-//        _time = 0.0;
+    /**
+     * @brief initArcTrj initialize a trajectory along an arc path.
+     * Here we assume that bang phases and coast phases have the same duration
+     * @param start_pose
+     * @param final_rotation wanted in the arc path
+     * @param angle_of_rotation of the arc path
+     * @param circle_center center of the arc path
+     * @param plane_normal normal of the plane of the arc
+     * @param trj_time
+     * @return true
+     */
+    bool initArcTrj(const KDL::Frame &start_pose, const KDL::Rotation &final_rotation,
+                    const double angle_of_rotation,
+                    const KDL::Vector &circle_center, const KDL::Vector &plane_normal,
+                    double trj_time)
+    {
+        KDL::Vector x(start_pose.p - circle_center);
+        x.Normalize();
 
-//        _circle_path.reset(new KDL::Path_Circle());
-//    }
+        KDL::Vector z(plane_normal);
+        z.Normalize();
+
+        KDL::Vector tmpv(z*x);
+
+        KDL::Vector V_base_p(tmpv + circle_center);
+
+        boost::shared_ptr<KDL::Path_Circle> circle_path;
+        circle_path.reset(new KDL::Path_Circle(start_pose, circle_center, V_base_p,
+                                final_rotation, angle_of_rotation,
+                                new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
+
+        double L = circle_path->PathLength();
+        double max_vel = (3.*L)/(2.*trj_time);
+        double max_acc = (9.*L)/(2.*trj_time*trj_time);
+
+        return initArcTrj(start_pose, final_rotation, angle_of_rotation, circle_center,
+                          plane_normal, max_vel, max_acc);
+    }
+
+    /**
+     * @brief initArcTrj initialize a trajectory along an arc path
+     * @param start_pose
+     * @param final_rotation wanted in the arc path
+     * @param angle_of_rotation of the arc path
+     * @param circle_center center of the arc path
+     * @param plane_normal normal of the plane of the arc
+     * @param max_vel
+     * @param max_acc
+     * @return false if for one sub-trajecotry the coast phase does not exist
+     */
+    bool initArcTrj(const KDL::Frame& start_pose, const KDL::Rotation& final_rotation,
+                    const double angle_of_rotation,
+                    const KDL::Vector& circle_center, const KDL::Vector& plane_normal,
+                    double max_vel, double max_acc)
+    {
+        trj.reset();
+        _time = 0.0;
+
+        KDL::Vector x(start_pose.p - circle_center);
+        x.Normalize();
+
+        KDL::Vector z(plane_normal);
+        z.Normalize();
+
+        KDL::Vector tmpv(z*x);
+
+        KDL::Vector V_base_p(tmpv + circle_center);
+
+        _circle_path.reset(new KDL::Path_Circle(start_pose, circle_center, V_base_p,
+                                final_rotation, angle_of_rotation,
+                                new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
+
+        _velocity_profile.reset(new KDL::VelocityProfile_Trap(max_vel, max_acc));
+        _velocity_profile->SetProfile(0, _circle_path->PathLength());
+
+        double L = _circle_path->PathLength();
+        if(L <= (max_vel*max_vel)/max_acc){
+            std::cout<<"Too fast trajectory, no Coast phase exists!"<<std::endl;
+            return false;
+        }
+
+        _trj_seg.reset(new KDL::Trajectory_Segment(_circle_path.get(), _velocity_profile.get()));
+
+        trj.reset(new KDL::Trajectory_Composite());
+        trj->Add(_trj_seg.get());
+
+        _is_inited = true;
+        return _is_inited;
+    }
 
 
     /**
