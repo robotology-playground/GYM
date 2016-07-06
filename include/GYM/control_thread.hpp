@@ -76,7 +76,7 @@ public:
      * @brief initCompositeTrj intialize a trajectory composed by sub-linear trajectories specified
      * by waypoints. Here we assume that bang phases and coast phases have the same duration and
      * each sub trajectory have the same duration
-     * @param way_points
+     * @param way_points vector, note that the first waypoint should be the actual pose
      * @param trj_time
      * @return true
      */
@@ -92,7 +92,7 @@ public:
     /**
      * @brief initCompositeTrj intialize a trajectory composed by sub-linear trajectories specified
      * by waypoints. Here we assume that bang phases and coast phases have the same duration
-     * @param way_points
+     * @param way_points vector, note that the first waypoint should be the actual pose
      * @param trj_times vector of time for each sub trajecotry
      * @return true
      */
@@ -128,7 +128,7 @@ public:
     /**
      * @brief initCompositeTrj intialize a trajectory composed by sub-linear trajectories specified
      * by waypoints. For each sub-trajectory we have the same max velocity and max acceleration
-     * @param way_points
+     * @param way_points vector, note that the first waypoint should be the actual pose
      * @param max_vel
      * @param max_acc
      * @return false if for one sub-trajecotry the coast phase does not exist
@@ -150,7 +150,7 @@ public:
     /**
      * @brief initCompositeTrj intialize a trajectory composed by sub-linear trajectories specified
      * by waypoints
-     * @param way_points
+     * @param way_points vector, note that the first waypoint should be the actual pose
      * @param max_vels vector of max velocities for each sub-trajectory
      * @param max_accs vector of max accelerations for each sub-trajectory
      * @return false if for one sub-trajecotry the coast phase does not exist
@@ -279,10 +279,7 @@ public:
         _time += _dt;
 
         if(isFinished())
-        {
             _is_inited = false;
-            trj.reset();
-        }
     }
 
     /**
