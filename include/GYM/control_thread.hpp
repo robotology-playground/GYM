@@ -142,10 +142,11 @@ public:
             return false;
         }
 
-        _trj_seg.reset(new KDL::Trajectory_Segment(_circle_path.get(), _velocity_profile.get()));
+        _trj_seg.reset(new KDL::Trajectory_Segment(_circle_path.get()->Clone(),
+                                                   _velocity_profile.get()->Clone()));
 
         trj.reset(new KDL::Trajectory_Composite());
-        trj->Add(_trj_seg.get());
+        trj->Add(_trj_seg.get()->Clone());
 
         _is_inited = true;
         return _is_inited;
@@ -270,10 +271,10 @@ public:
             }
 
             _vector_of_trj_segment.push_back(boost::shared_ptr<KDL::Trajectory_Segment>(
-                new KDL::Trajectory_Segment(_vector_of_line_paths[i].get(),
-                                            _vector_of_velocity_profiles[i].get())));
+                new KDL::Trajectory_Segment(_vector_of_line_paths[i].get()->Clone(),
+                                            _vector_of_velocity_profiles[i].get()->Clone())));
 
-            trj->Add(_vector_of_trj_segment[i].get());
+            trj->Add(_vector_of_trj_segment[i].get()->Clone());
         }
 
         _is_inited = true;
@@ -304,10 +305,11 @@ public:
             return false;
         }
 
-        _trj_seg.reset(new KDL::Trajectory_Segment(_linear_path.get(), _velocity_profile.get()));
+        _trj_seg.reset(new KDL::Trajectory_Segment(_linear_path.get()->Clone(),
+                                                   _velocity_profile.get()->Clone()));
 
         trj.reset(new KDL::Trajectory_Composite());
-        trj->Add(_trj_seg.get());
+        trj->Add(_trj_seg.get()->Clone());
 
         _is_inited = true;
         return _is_inited;
