@@ -59,7 +59,10 @@ public:
         _time(0.0),
         _eq_radius(0.01),
         _is_inited(false)
-    {}
+    {
+        _last_valid_pose.Identity();
+        _last_valid_twist.Zero();
+    }
 
     /**
      * @brief initArcTrj initialize a trajectory along an arc path.
@@ -116,6 +119,9 @@ public:
                     const KDL::Vector& circle_center, const KDL::Vector& plane_normal,
                     double max_vel, double max_acc)
     {
+        _last_valid_pose = start_pose;
+        _last_valid_twist.Zero();
+
         trj.reset();
         _time = 0.0;
 
@@ -246,6 +252,9 @@ public:
             std::cout<<"max_vels.size() != way_points.size()-1"<<std::endl;
             return false;}
 
+        _last_valid_pose = way_points[0];
+        _last_valid_twist.Zero();
+
         trj.reset();
         _time = 0.0;
 
@@ -291,6 +300,9 @@ public:
      */
     bool initLinearTrj(const KDL::Frame& start, const KDL::Frame& end, const double max_vel, const double max_acc)
     {
+        _last_valid_pose = start;
+        _last_valid_twist.Zero();
+
         trj.reset();
         _time = 0.0;
 
@@ -341,7 +353,15 @@ public:
      */
     KDL::Frame Pos()
     {
-        return trj->Pos(_time);
+        KDL::Frame pose = trj->Pos(_time);
+        double x,y,z,w;
+        pose.M.GetQuaternion(x,y,z,w);
+        if(isnan(x))
+            pose.M = _last_valid_pose.M;
+        else
+            _last_valid_pose = pose;
+
+        return pose;
     }
 
     /**
@@ -435,6 +455,8 @@ private:
     boost::shared_ptr<KDL::Path_Circle> _circle_path;
     boost::shared_ptr<KDL::Trajectory_Segment> _trj_seg;
 
+    KDL::Frame _last_valid_pose;
+    KDL::Twist _last_valid_twist;
 
 };
 
