@@ -59,9 +59,7 @@ public:
         _time(0.0),
         _eq_radius(0.01),
         _is_inited(false)
-    {
-
-    }
+    {}
 
     /**
      * @brief initArcTrj initialize a trajectory along an arc path.
@@ -163,7 +161,7 @@ public:
      * @param trj_time
      * @return true
      */
-    bool initCompositeTrj(std::vector<KDL::Frame>& way_points, const double trj_time)
+    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points, const double trj_time)
     {
         std::vector<double> trj_times;
         for(unsigned int i = 0; i < way_points.size()-1; ++i)
@@ -179,7 +177,7 @@ public:
      * @param trj_times vector of time for each sub trajecotry
      * @return true
      */
-    bool initCompositeTrj(std::vector<KDL::Frame>& way_points,
+    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points,
                           const std::vector<double> trj_times)
     {
         if(trj_times.size() != way_points.size()-1){
@@ -187,14 +185,10 @@ public:
             return false;
         }
 
-        std::vector<KDL::Frame> _way_points = way_points;
-        for(unsigned int i = 0; i < _way_points.size(); ++i)
-            checkPI(_way_points[i]);
-
         std::vector<boost::shared_ptr<KDL::Path_Line> > vector_of_line_paths;
-        for(unsigned int i = 0; i < _way_points.size()-1; ++i)
+        for(unsigned int i = 0; i < way_points.size()-1; ++i)
             vector_of_line_paths.push_back(boost::shared_ptr<KDL::Path_Line>(
-                new KDL::Path_Line(_way_points[i], _way_points[i+1],
+                new KDL::Path_Line(way_points[i], way_points[i+1],
                     new KDL::RotationalInterpolation_SingleAxis(), _eq_radius)));
 
         std::vector<double> max_vels;
@@ -220,7 +214,7 @@ public:
      * @param max_acc
      * @return false if for one sub-trajecotry the coast phase does not exist
      */
-    bool initCompositeTrj(std::vector<KDL::Frame>& way_points,
+    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points,
                           const double max_vel, const double max_acc)
     {
         std::vector<double> max_vels;
@@ -242,7 +236,7 @@ public:
      * @param max_accs vector of max accelerations for each sub-trajectory
      * @return false if for one sub-trajecotry the coast phase does not exist
      */
-    bool initCompositeTrj(std::vector<KDL::Frame>& way_points,
+    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points,
                           const std::vector<double> max_vels, const std::vector<double> max_accs)
     {
         if(max_vels.size() != max_accs.size()){
@@ -254,9 +248,6 @@ public:
 
         trj.reset();
         _time = 0.0;
-
-        for(unsigned int i = 0; i < way_points.size(); ++i)
-            checkPI(way_points[i]);
 
         _vector_of_line_paths.clear();
         for(unsigned int i = 0; i < way_points.size()-1; ++i)
@@ -298,13 +289,10 @@ public:
      * @param max_acc max acceleration of the trajectory
      * @return false if with the specified max_vel and max_acc the bang phase does not exist
      */
-    bool initLinearTrj(KDL::Frame& start, KDL::Frame& end, const double max_vel, const double max_acc)
+    bool initLinearTrj(const KDL::Frame& start, const KDL::Frame& end, const double max_vel, const double max_acc)
     {
         trj.reset();
         _time = 0.0;
-
-        checkPI(start);
-        checkPI(end);
 
         _linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
 
@@ -335,15 +323,10 @@ public:
      * @param trj_time total time of the trj
      * @return true
      */
-    bool initLinearTrj(KDL::Frame &start, KDL::Frame &end, const double trj_time)
+    bool initLinearTrj(const KDL::Frame &start, const KDL::Frame &end, const double trj_time)
     {
-        KDL::Frame _start = start;
-        KDL::Frame _end = end;
-        checkPI(_start);
-        checkPI(_end);
-
         boost::shared_ptr<KDL::Path_Line> linear_path;
-        linear_path.reset(new KDL::Path_Line(_start, _end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
+        linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
 
         double L = linear_path->PathLength();
         double max_vel = (3.*L)/(2.*trj_time);
@@ -452,25 +435,12 @@ private:
     boost::shared_ptr<KDL::Path_Circle> _circle_path;
     boost::shared_ptr<KDL::Trajectory_Segment> _trj_seg;
 
-    void checkPI(KDL::Frame& T)
-    {
-        double roll, pitch, yaw;
-
-        T.M.GetRPY(roll, pitch, yaw);
-        if((fabs(roll)-M_PI) < 0.0001)
-            T.M.DoRotX(0.0001);
-        if((fabs(pitch)-M_PI) < 0.0001)
-            T.M.DoRotY(0.0001);
-        if((fabs(yaw)-M_PI) < 0.0001)
-            T.M.DoRotZ(0.0001);
-    }
-
 
 };
 
 /**
  * @brief control thread
- * 
+ *
  * @author Luca Muratore (luca.muratore@iit.it)
  **/
 class control_thread : public generic_thread
@@ -482,11 +452,11 @@ protected:
     std::string urdf_path;
     // srdf path
     std::string srdf_path;
-    
+
     trj_interface trj;
 
-public: 
-    
+public:
+
     /**
      * @brief constructor of the generic thread.
      *
@@ -494,42 +464,42 @@ public:
      * @param thread_period period of the run thread in millisecond.
      * @param rf resource finder.
      **/
-    control_thread( std::string module_prefix, 
-                    yarp::os::ResourceFinder rf, 
+    control_thread( std::string module_prefix,
+                    yarp::os::ResourceFinder rf,
                 std::shared_ptr<paramHelp::ParamHelperServer> ph  ) :   robot(  module_prefix,
-                                                                                rf.find("robot_name").asString(), 
+                                                                                rf.find("robot_name").asString(),
                                                                                 rf.find("urdf_path").asString(),
                                                                                 rf.find("srdf_path").asString() ),
-                                                                                
+
                                                                         model( robot.idynutils ),
                                                                         urdf_path( rf.find("urdf_path").asString() ),
                                                                         srdf_path( rf.find("srdf_path").asString() ),
                                                                         trj( rf.find("thread_period").asDouble()/1000. ),
                                                                         generic_thread( module_prefix, rf, ph )
-    {    
+    {
     }
-    
+
     /**
      * @brief getter method for the urdf path
-     * 
+     *
      * @return the urdf path
      */
-    std::string get_urdf_path() 
+    std::string get_urdf_path()
     {
         return urdf_path;
     }
-    
+
     /**
      * @brief getter method for the srdf path
-     * 
+     *
      * @return the srdf path
      */
-    std::string get_srdf_path() 
+    std::string get_srdf_path()
     {
         return srdf_path;
     }
-    
-  
+
+
 };
 
 #endif //CONTROL_THREAD_HPP
