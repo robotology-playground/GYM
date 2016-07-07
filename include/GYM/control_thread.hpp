@@ -60,8 +60,7 @@ public:
         _eq_radius(0.01),
         _is_inited(false)
     {
-        _last_valid_pose.Identity();
-        _last_valid_twist.Zero();
+
     }
 
     /**
@@ -119,9 +118,6 @@ public:
                     const KDL::Vector& circle_center, const KDL::Vector& plane_normal,
                     double max_vel, double max_acc)
     {
-        _last_valid_pose = start_pose;
-        _last_valid_twist.Zero();
-
         trj.reset();
         _time = 0.0;
 
@@ -167,7 +163,7 @@ public:
      * @param trj_time
      * @return true
      */
-    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points, const double trj_time)
+    bool initCompositeTrj(std::vector<KDL::Frame>& way_points, const double trj_time)
     {
         std::vector<double> trj_times;
         for(unsigned int i = 0; i < way_points.size()-1; ++i)
@@ -183,7 +179,7 @@ public:
      * @param trj_times vector of time for each sub trajecotry
      * @return true
      */
-    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points,
+    bool initCompositeTrj(std::vector<KDL::Frame>& way_points,
                           const std::vector<double> trj_times)
     {
         if(trj_times.size() != way_points.size()-1){
@@ -191,10 +187,14 @@ public:
             return false;
         }
 
+        std::vector<KDL::Frame> _way_points = way_points;
+        for(unsigned int i = 0; i < _way_points.size(); ++i)
+            checkPI(_way_points[i]);
+
         std::vector<boost::shared_ptr<KDL::Path_Line> > vector_of_line_paths;
-        for(unsigned int i = 0; i < way_points.size()-1; ++i)
+        for(unsigned int i = 0; i < _way_points.size()-1; ++i)
             vector_of_line_paths.push_back(boost::shared_ptr<KDL::Path_Line>(
-                new KDL::Path_Line(way_points[i], way_points[i+1],
+                new KDL::Path_Line(_way_points[i], _way_points[i+1],
                     new KDL::RotationalInterpolation_SingleAxis(), _eq_radius)));
 
         std::vector<double> max_vels;
@@ -220,7 +220,7 @@ public:
      * @param max_acc
      * @return false if for one sub-trajecotry the coast phase does not exist
      */
-    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points,
+    bool initCompositeTrj(std::vector<KDL::Frame>& way_points,
                           const double max_vel, const double max_acc)
     {
         std::vector<double> max_vels;
@@ -242,7 +242,7 @@ public:
      * @param max_accs vector of max accelerations for each sub-trajectory
      * @return false if for one sub-trajecotry the coast phase does not exist
      */
-    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points,
+    bool initCompositeTrj(std::vector<KDL::Frame>& way_points,
                           const std::vector<double> max_vels, const std::vector<double> max_accs)
     {
         if(max_vels.size() != max_accs.size()){
@@ -252,11 +252,11 @@ public:
             std::cout<<"max_vels.size() != way_points.size()-1"<<std::endl;
             return false;}
 
-        _last_valid_pose = way_points[0];
-        _last_valid_twist.Zero();
-
         trj.reset();
         _time = 0.0;
+
+        for(unsigned int i = 0; i < way_points.size(); ++i)
+            checkPI(way_points[i]);
 
         _vector_of_line_paths.clear();
         for(unsigned int i = 0; i < way_points.size()-1; ++i)
@@ -298,13 +298,13 @@ public:
      * @param max_acc max acceleration of the trajectory
      * @return false if with the specified max_vel and max_acc the bang phase does not exist
      */
-    bool initLinearTrj(const KDL::Frame& start, const KDL::Frame& end, const double max_vel, const double max_acc)
+    bool initLinearTrj(KDL::Frame& start, KDL::Frame& end, const double max_vel, const double max_acc)
     {
-        _last_valid_pose = start;
-        _last_valid_twist.Zero();
-
         trj.reset();
         _time = 0.0;
+
+        checkPI(start);
+        checkPI(end);
 
         _linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
 
@@ -335,10 +335,15 @@ public:
      * @param trj_time total time of the trj
      * @return true
      */
-    bool initLinearTrj(const KDL::Frame &start, const KDL::Frame &end, const double trj_time)
+    bool initLinearTrj(KDL::Frame &start, KDL::Frame &end, const double trj_time)
     {
+        KDL::Frame _start = start;
+        KDL::Frame _end = end;
+        checkPI(_start);
+        checkPI(_end);
+
         boost::shared_ptr<KDL::Path_Line> linear_path;
-        linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
+        linear_path.reset(new KDL::Path_Line(_start, _end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
 
         double L = linear_path->PathLength();
         double max_vel = (3.*L)/(2.*trj_time);
@@ -353,15 +358,7 @@ public:
      */
     KDL::Frame Pos()
     {
-        KDL::Frame pose = trj->Pos(_time);
-        double x,y,z,w;
-        pose.M.GetQuaternion(x,y,z,w);
-        if(isnan(x))
-            pose.M = _last_valid_pose.M;
-        else
-            _last_valid_pose = pose;
-
-        return pose;
+        return trj->Pos(_time);
     }
 
     /**
@@ -455,8 +452,19 @@ private:
     boost::shared_ptr<KDL::Path_Circle> _circle_path;
     boost::shared_ptr<KDL::Trajectory_Segment> _trj_seg;
 
-    KDL::Frame _last_valid_pose;
-    KDL::Twist _last_valid_twist;
+    void checkPI(KDL::Frame& T)
+    {
+        double roll, pitch, yaw;
+
+        T.M.GetRPY(roll, pitch, yaw);
+        if((fabs(roll)-M_PI) < 0.0001)
+            T.M.DoRotX(0.0001);
+        if((fabs(pitch)-M_PI) < 0.0001)
+            T.M.DoRotY(0.0001);
+        if((fabs(yaw)-M_PI) < 0.0001)
+            T.M.DoRotZ(0.0001);
+    }
+
 
 };
 
