@@ -26,6 +26,7 @@
 #include <yarp/os/all.h>
 // idynutils
 #include <idynutils/RobotUtils.h>
+#include <idynutils/cartesian_utils.h>
 
 // param helper
 #include <paramHelp/paramHelperServer.h>
@@ -177,9 +178,13 @@ public:
      * @param trj_times vector of time for each sub trajecotry
      * @return true
      */
-    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points,
+    bool initCompositeTrj(const std::vector<KDL::Frame>& _way_points,
                           const std::vector<double> trj_times)
     {
+        std::vector<KDL::Frame> way_points;
+        for(unsigned int i = 0; i < _way_points.size(); ++i)
+            way_points.push_back(normalizeQuaternion(_way_points[i]));
+
         if(trj_times.size() != way_points.size()-1){
             std::cout<<"trj_time.size() != way_points.size()-1"<<std::endl;
             return false;
@@ -203,7 +208,7 @@ public:
             max_accs.push_back(max_acc);
         }
 
-        return initCompositeTrj(way_points, max_vels, max_accs);
+        return initCompositeTrj(_way_points, max_vels, max_accs);
     }
 
     /**
@@ -236,9 +241,13 @@ public:
      * @param max_accs vector of max accelerations for each sub-trajectory
      * @return false if for one sub-trajecotry the coast phase does not exist
      */
-    bool initCompositeTrj(const std::vector<KDL::Frame>& way_points,
+    bool initCompositeTrj(const std::vector<KDL::Frame>& _way_points,
                           const std::vector<double> max_vels, const std::vector<double> max_accs)
     {
+        std::vector<KDL::Frame> way_points;
+        for(unsigned int i = 0; i < _way_points.size(); ++i)
+            way_points.push_back(normalizeQuaternion(_way_points[i]));
+
         if(max_vels.size() != max_accs.size()){
             std::cout<<"max_vels.size() != max_accs.size()"<<std::endl;
             return false;}
@@ -289,8 +298,13 @@ public:
      * @param max_acc max acceleration of the trajectory
      * @return false if with the specified max_vel and max_acc the bang phase does not exist
      */
-    bool initLinearTrj(const KDL::Frame& start, const KDL::Frame& end, const double max_vel, const double max_acc)
+    bool initLinearTrj(const KDL::Frame& _start, const KDL::Frame& _end, const double max_vel, const double max_acc)
     {
+        KDL::Frame start; start.Identity();
+        start = normalizeQuaternion(_start);
+        KDL::Frame end; end.Identity();
+        end = normalizeQuaternion(_end);
+
         trj.reset();
         _time = 0.0;
 
@@ -323,8 +337,13 @@ public:
      * @param trj_time total time of the trj
      * @return true
      */
-    bool initLinearTrj(const KDL::Frame &start, const KDL::Frame &end, const double trj_time)
+    bool initLinearTrj(const KDL::Frame &_start, const KDL::Frame &_end, const double trj_time)
     {
+        KDL::Frame start; start.Identity();
+        start = normalizeQuaternion(_start);
+        KDL::Frame end; end.Identity();
+        end = normalizeQuaternion(_end);
+
         boost::shared_ptr<KDL::Path_Line> linear_path;
         linear_path.reset(new KDL::Path_Line(start, end, new KDL::RotationalInterpolation_SingleAxis(), _eq_radius));
 
@@ -332,7 +351,7 @@ public:
         double max_vel = (3.*L)/(2.*trj_time);
         double max_acc = (9.*L)/(2.*trj_time*trj_time);
 
-        return initLinearTrj(start, end, max_vel, max_acc);
+        return initLinearTrj(_start, _end, max_vel, max_acc);
     }
     
      /**
@@ -455,6 +474,18 @@ private:
     boost::shared_ptr<KDL::Path_Circle> _circle_path;
     boost::shared_ptr<KDL::Trajectory_Segment> _trj_seg;
 
+    KDL::Frame normalizeQuaternion(const KDL::Frame& F)
+    {
+        KDL::Frame tmp = F;
+        double x,y,z,w;
+        tmp.M.GetQuaternion(x,y,z,w);
+
+        quaternion tmp_q(x,y,z,w);
+        quaternion::normalize(tmp_q);
+
+        tmp.M = tmp.M.Quaternion(tmp_q.x, tmp_q.y,tmp_q.z,tmp_q.w);
+        return tmp;
+    }
 
 };
 
