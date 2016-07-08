@@ -334,6 +334,26 @@ public:
 
         return initLinearTrj(start, end, max_vel, max_acc);
     }
+    
+     /**
+     * @brief Pos
+     * @param t the requested time
+     * @return pose of the trajectory at t time
+     */
+    KDL::Frame Pos(double t)
+    {
+        return trj->Pos(t);
+    }
+
+    /**
+     * @brief Vel
+     * @param t the requested time
+     * @return velocity of the trajectory at t time
+     */
+    KDL::Twist Vel(double t)
+    {
+        return trj->Vel(t);
+    }
 
     /**
      * @brief Pos
