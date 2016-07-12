@@ -26,15 +26,16 @@
 #include <yarp/os/all.h>
 // idynutils
 #include <idynutils/RobotUtils.h>
-
 // param helper
 #include <paramHelp/paramHelperServer.h>
 // C++11 smart pointers
 #include <memory>
+// trajectory
+#include <trajectory_utils/trajectory_utils.h>
 
 /**
  * @brief control thread
- * 
+ *
  * @author Luca Muratore (luca.muratore@iit.it)
  **/
 class control_thread : public generic_thread
@@ -46,10 +47,11 @@ protected:
     std::string urdf_path;
     // srdf path
     std::string srdf_path;
-    
 
-public: 
-    
+    trajectory_utils::trajectory_generator trj_gen;
+
+public:
+
     /**
      * @brief constructor of the generic thread.
      *
@@ -57,41 +59,42 @@ public:
      * @param thread_period period of the run thread in millisecond.
      * @param rf resource finder.
      **/
-    control_thread( std::string module_prefix, 
-                    yarp::os::ResourceFinder rf, 
-		std::shared_ptr<paramHelp::ParamHelperServer> ph  ) :   robot( 	module_prefix,
-										rf.find("robot_name").asString(), 
-										rf.find("urdf_path").asString(),
-										rf.find("srdf_path").asString() ),
-										
-									model( robot.idynutils ),
-									urdf_path( rf.find("urdf_path").asString() ),
-									srdf_path( rf.find("srdf_path").asString() ),
-									generic_thread( module_prefix, rf, ph )
-    {    
+    control_thread( std::string module_prefix,
+                    yarp::os::ResourceFinder rf,
+                std::shared_ptr<paramHelp::ParamHelperServer> ph  ) :   robot(  module_prefix,
+                                                                                rf.find("robot_name").asString(),
+                                                                                rf.find("urdf_path").asString(),
+                                                                                rf.find("srdf_path").asString() ),
+
+                                                                        model( robot.idynutils ),
+                                                                        urdf_path( rf.find("urdf_path").asString() ),
+                                                                        srdf_path( rf.find("srdf_path").asString() ),
+                                                                        trj_gen( rf.find("thread_period").asDouble()/1000. ),
+                                                                        generic_thread( module_prefix, rf, ph )
+    {
     }
-    
+
     /**
      * @brief getter method for the urdf path
-     * 
+     *
      * @return the urdf path
      */
-    std::string get_urdf_path() 
+    std::string get_urdf_path()
     {
-	return urdf_path;
+        return urdf_path;
     }
-    
+
     /**
      * @brief getter method for the srdf path
-     * 
+     *
      * @return the srdf path
      */
-    std::string get_srdf_path() 
+    std::string get_srdf_path()
     {
-	return srdf_path;
+        return srdf_path;
     }
-    
-  
+
+
 };
 
 #endif //CONTROL_THREAD_HPP
