@@ -190,8 +190,8 @@ private:
      */ 
     void ph_register_commands() 
     {
-        YARP_ASSERT(ph->registerCommandCallback(COMMAND_ID_HELP,           this));
-        YARP_ASSERT(ph->registerCommandCallback(COMMAND_ID_SAVE_PARAMS,    this));
+        ph->registerCommandCallback(COMMAND_ID_HELP,           this);
+        ph->registerCommandCallback(COMMAND_ID_SAVE_PARAMS,    this);
         custom_ph_register_commands();
     }
 
