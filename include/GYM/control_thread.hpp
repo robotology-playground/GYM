@@ -504,8 +504,6 @@ protected:
     // srdf path
     std::string srdf_path;
 
-    trj_interface trj;
-
 public:
 
     /**
@@ -525,7 +523,6 @@ public:
                                                                         model( robot.idynutils ),
                                                                         urdf_path( rf.find("urdf_path").asString() ),
                                                                         srdf_path( rf.find("srdf_path").asString() ),
-                                                                        trj( rf.find("thread_period").asDouble()/1000. ),
                                                                         generic_thread( module_prefix, rf, ph )
     {
     }
