@@ -30,8 +30,6 @@
 #include <paramHelp/paramHelperServer.h>
 // C++11 smart pointers
 #include <memory>
-// trajectory
-#include <trajectory_utils/trajectory_utils.h>
 
 /**
  * @brief control thread
@@ -47,8 +45,6 @@ protected:
     std::string urdf_path;
     // srdf path
     std::string srdf_path;
-
-    trajectory_utils::trajectory_generator trj_gen;
 
 public:
 
@@ -69,7 +65,6 @@ public:
                                                                         model( robot.idynutils ),
                                                                         urdf_path( rf.find("urdf_path").asString() ),
                                                                         srdf_path( rf.find("srdf_path").asString() ),
-                                                                        trj_gen( rf.find("thread_period").asDouble()/1000. ),
                                                                         generic_thread( module_prefix, rf, ph )
     {
     }

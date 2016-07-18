@@ -44,7 +44,7 @@ FIND_PACKAGE(paramHelp REQUIRED)
 FIND_PACKAGE(Boost 1.54.0 COMPONENTS system thread)
 # to avoid header not found when using idynutils 
 FIND_PACKAGE(Eigen3 REQUIRED)
-FIND_PACKAGE(trajectory_utils REQUIRED)
+
 
 INCLUDE_DIRECTORIES(include ${YARP_INCLUDE_DIRS} ${paramHelp_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR}
 ${trajectory_utils_INCLUDE_DIRS})
