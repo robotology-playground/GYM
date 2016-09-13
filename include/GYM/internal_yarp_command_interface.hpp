@@ -28,6 +28,7 @@
 #include <yarp/os/Bottle.h>
 #include <mutex>
 #include <unistd.h>
+#include <sstream>
 
 
 namespace walkman
@@ -41,14 +42,18 @@ namespace walkman
                 if (module_prefix[0]=='/') module_prefix=module_prefix.substr(1);
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
-                std::string temp_o_num=temp_o;
-                if (yarp::os::NetworkBase::exists(temp_o_num))
-                    temp_o_num=temp_o+std::to_string(1);
-                if (yarp::os::NetworkBase::exists(temp_o_num))
-                    temp_o_num=temp_o+std::to_string(2);
-                if (yarp::os::NetworkBase::exists(temp_o_num))
-                    temp_o_num=temp_o+std::to_string(3);
-                
+                std::string temp_o_num;
+                unsigned int count = 0;
+                do
+                {
+                    std::stringstream temp_o_num_ss(temp_o);
+                    if(count > 0)
+                        temp_o_num_ss << count;
+                    temp_o_num = temp_o_num_ss.str();
+                    ++count;
+                } while(yarp::os::NetworkBase::exists(temp_o_num.c_str()));
+
+
                 /*
                  * ALTERNATIVE VERSION WITH ONLY 1 QUERY BUT MORE RESULTS IN THE MESSAGE
                 yarp::os::ContactStyle style;
@@ -114,13 +119,16 @@ namespace walkman
                 this->module_prefix=module_prefix;
                 std::string temp_o="/"+module_prefix+port_suffix+":o";
                 std::string temp_i="/"+module_prefix+port_suffix+":i";
-                std::string temp_o_num=temp_o;
-                if (yarp::os::NetworkBase::exists(temp_o_num))
-                    temp_o_num=temp_o+std::to_string(1);
-                if (yarp::os::NetworkBase::exists(temp_o_num))
-                    temp_o_num=temp_o+std::to_string(2);
-                if (yarp::os::NetworkBase::exists(temp_o_num))
-                    temp_o_num=temp_o+std::to_string(3);
+                std::string temp_o_num;
+                unsigned int count = 0;
+                do
+                {
+                    std::stringstream temp_o_num_ss(temp_o);
+                    if(count > 0)
+                        temp_o_num_ss << count;
+                    temp_o_num = temp_o_num_ss.str();
+                    ++count;
+                } while(yarp::os::NetworkBase::exists(temp_o_num.c_str()));
                 
                 command_port.open(temp_o_num.c_str());
                 yarp::os::ContactStyle style;
