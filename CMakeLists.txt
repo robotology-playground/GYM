@@ -39,6 +39,9 @@ endif()
 
 #list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
+# find first YCM in order to have ${YCM_MODULE_PATH} defined for 3rd party software like Eigen3
+find_package(YCM REQUIRED)
+
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(paramHelp REQUIRED)
 FIND_PACKAGE(Boost 1.54.0 COMPONENTS system thread)
